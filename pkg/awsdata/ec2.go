@@ -27,7 +27,6 @@ func DescribeInstances(sess *session.Session) []*ec2.Reservation {
 		}
 		return nil
 	}
-
 	return result.Reservations
 }
 
@@ -173,4 +172,30 @@ func StartInstance(sess *session.Session, instanceID string) {
 	}
 
 	fmt.Println(result)
+}
+
+func DescribeSecurityGroup(sess *session.Session, sg string) *ec2.DescribeSecurityGroupsOutput {
+	svc := ec2.New(sess)
+	input := &ec2.DescribeSecurityGroupsInput{
+		GroupIds: []*string{
+			aws.String(sg),
+		},
+	}
+
+	result, err := svc.DescribeSecurityGroups(input)
+	if err != nil {
+		if aerr, ok := err.(awserr.Error); ok {
+			switch aerr.Code() {
+			default:
+				fmt.Println(aerr.Error())
+			}
+		} else {
+			// Print the error, cast err to awserr.Error to get the Code and
+			// Message from an error.
+			fmt.Println(err.Error())
+		}
+		return nil
+	}
+
+	return result
 }

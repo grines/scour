@@ -2,6 +2,8 @@ package awsdata
 
 import (
 	"fmt"
+	"log"
+	"net/url"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
@@ -9,7 +11,9 @@ import (
 	"github.com/aws/aws-sdk-go/service/iam"
 )
 
-func ListUsers(sess *session.Session) {
+func ListUsers(sess *session.Session, hide bool) []string {
+	data := [][]string{}
+	var users []string
 
 	// Create a IAM service client.
 	svc := iam.New(sess)
@@ -20,15 +24,23 @@ func ListUsers(sess *session.Session) {
 
 	if err != nil {
 		fmt.Println("Error", err)
-		return
+		return nil
 	}
 
-	for i, user := range result.Users {
+	for _, user := range result.Users {
 		if user == nil {
 			continue
 		}
-		fmt.Printf("%d user %s created %v\n", i, *user.UserName, user.CreateDate)
+		//fmt.Printf("%d user %s created %v\n", i, *user.UserName, user.CreateDate)
+		users = append(users, *user.UserName)
+		row := []string{*user.UserName, user.CreateDate.String()}
+		data = append(data, row)
 	}
+	header := []string{"UserName", "CreateDate"}
+	if hide == false {
+		tableData(data, header)
+	}
+	return users
 }
 
 func ListGroups(sess *session.Session) {
@@ -53,26 +65,28 @@ func ListGroups(sess *session.Session) {
 	}
 }
 
-func ListRoles(sess *session.Session) {
+func ListRoles(sess *session.Session) *iam.ListRolesOutput {
 
 	// Create a IAM service client.
 	svc := iam.New(sess)
 
 	result, err := svc.ListRoles(&iam.ListRolesInput{
-		MaxItems: aws.Int64(10),
+		MaxItems: aws.Int64(100),
 	})
 
 	if err != nil {
 		fmt.Println("Error", err)
-		return
+		return nil
 	}
 
-	for i, role := range result.Roles {
-		if role == nil {
-			continue
-		}
-		fmt.Printf("%d role %s created %v\n", i, *role.Arn, role.CreateDate)
-	}
+	//for i, role := range result.Roles {
+	//	if role == nil {
+	//		continue
+	//	}
+	//fmt.Println(*role)
+	//fmt.Printf("%d role %s created %v\n", i, *role.Arn, role.CreateDate)
+	//}
+	return result
 }
 
 func ListGroupsForUser(sess *session.Session, username string) []*iam.Group {
@@ -115,7 +129,7 @@ func ListAttachedGroupPolicies(sess *session.Session, groupname string) []*iam.A
 	return result.AttachedPolicies
 }
 
-func ListAttachedRolePolicies(sess *session.Session, rolename string) {
+func ListAttachedRolePolicies(sess *session.Session, rolename string) []*iam.AttachedPolicy {
 
 	// Create a IAM service client.
 	svc := iam.New(sess)
@@ -126,15 +140,16 @@ func ListAttachedRolePolicies(sess *session.Session, rolename string) {
 
 	if err != nil {
 		fmt.Println("Error", err)
-		return
+		return nil
 	}
 
-	for i, role := range result.AttachedPolicies {
-		if role == nil {
-			continue
-		}
-		fmt.Printf("%d policy %s name %v\n", i, *role.PolicyArn, role.PolicyName)
-	}
+	//for i, role := range result.AttachedPolicies {
+	//	if role == nil {
+	//		continue
+	//	}
+	//	fmt.Printf("%d policy %s name %v\n", i, *role.PolicyArn, role.PolicyName)
+	//}
+	return result.AttachedPolicies
 }
 
 func ListUserPolicies(sess *session.Session, username string) {
@@ -237,6 +252,54 @@ func GetPolicy(sess *session.Session, arn string) {
 	}
 
 	fmt.Printf("%s - %s - %s\n", arn, *result.Policy.Description, *result.Policy)
+}
+
+func GetPolicyVersion(sess *session.Session, arn string) string {
+	// Create a IAM service client.
+	svc := iam.New(sess)
+
+	result, err := svc.GetPolicyVersion(&iam.GetPolicyVersionInput{
+		PolicyArn: &arn,
+		VersionId: aws.String("v1"),
+	})
+
+	if err != nil {
+		fmt.Println("Error", err)
+		return ""
+	}
+
+	//fmt.Printf("%s\n", *result.PolicyVersion.Document)
+	decodedValue, err := url.QueryUnescape(aws.StringValue(result.PolicyVersion.Document))
+	if err != nil {
+		log.Fatal(err)
+		return ""
+	}
+	return decodedValue
+}
+
+func GetUserPolicy(sess *session.Session, username string, policy string) string {
+	// Create a IAM service client.
+	svc := iam.New(sess)
+
+	result, err := svc.GetUserPolicy(&iam.GetUserPolicyInput{
+		UserName:   aws.String(username),
+		PolicyName: aws.String(policy),
+	})
+
+	if err != nil {
+		fmt.Println("Error", err)
+		return ""
+	}
+
+	//fmt.Printf("%s\n", *result.PolicyVersion.Document)
+	decodedValue, err := url.QueryUnescape(aws.StringValue(result.PolicyDocument))
+	if err != nil {
+		log.Fatal(err)
+		return ""
+	}
+	return decodedValue
+
+	//data := []byte(decodedValue)
 }
 
 func CreateAccessKey(sess *session.Session, username string) {
@@ -430,4 +493,31 @@ func AddRoleToInstanceProfile(sess *session.Session, name string) {
 	if len(result.String()) > 4 {
 		fmt.Println(result.String())
 	}
+}
+
+func GetInstanceProfile(sess *session.Session, profile string) *iam.GetInstanceProfileOutput {
+	svc := iam.New(sess)
+	input := &iam.GetInstanceProfileInput{
+		InstanceProfileName: aws.String(profile),
+	}
+
+	result, err := svc.GetInstanceProfile(input)
+	if err != nil {
+		if aerr, ok := err.(awserr.Error); ok {
+			switch aerr.Code() {
+			case iam.ErrCodeNoSuchEntityException:
+				fmt.Println(iam.ErrCodeNoSuchEntityException, aerr.Error())
+			case iam.ErrCodeServiceFailureException:
+				fmt.Println(iam.ErrCodeServiceFailureException, aerr.Error())
+			default:
+				fmt.Println(aerr.Error())
+			}
+		} else {
+			// Print the error, cast err to awserr.Error to get the Code and
+			// Message from an error.
+			fmt.Println(err.Error())
+		}
+		return nil
+	}
+	return result
 }

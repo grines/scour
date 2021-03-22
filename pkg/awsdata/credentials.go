@@ -13,7 +13,8 @@ type Finding struct {
 	Finding string `json:"finding"`
 }
 
-func CredentialDiscoveryUserData(sess *session.Session) {
+func CredentialDiscoveryUserData(sess *session.Session, t string) {
+	rando := SetTrackingAction(t, "userdata-creds")
 	data := [][]string{}
 
 	instances := DescribeInstances(sess)
@@ -32,11 +33,13 @@ func CredentialDiscoveryUserData(sess *session.Session) {
 		}
 
 	}
+	fmt.Println("UA Tracking: exec-env/" + rando)
 	header := []string{"InstanceID", "Rule", "Finding"}
 	tableData(data, header)
 }
 
-func CredentialDiscoverySSMParams(sess *session.Session) {
+func CredentialDiscoverySSMParams(sess *session.Session, t string) {
+	rando := SetTrackingAction(t, "ssm-params-creds")
 	data := [][]string{}
 
 	params := DescribeParameters(sess)
@@ -46,11 +49,13 @@ func CredentialDiscoverySSMParams(sess *session.Session) {
 		data = append(data, row)
 
 	}
+	fmt.Println("UA Tracking: exec-env/" + rando)
 	header := []string{"Param Name", "DataType", "Value"}
 	tableData(data, header)
 }
 
-func CredentialDiscoveryECSEnv(sess *session.Session) {
+func CredentialDiscoveryECSEnv(sess *session.Session, t string) {
+	rando := SetTrackingAction(t, "ecs-creds")
 	data := [][]string{}
 
 	defs := ListTaskDefinitions(sess)
@@ -64,6 +69,7 @@ func CredentialDiscoveryECSEnv(sess *session.Session) {
 		}
 
 	}
+	fmt.Println("UA Tracking: exec-env/" + rando)
 	header := []string{"Envars name", "Value", "Definition"}
 	tableData(data, header)
 }

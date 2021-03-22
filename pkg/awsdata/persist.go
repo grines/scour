@@ -18,7 +18,7 @@ func PersistAccessKey(sess *session.Session, username string) {
 }
 
 //PersistEC2 creates IAM InstanceProfile / Role w/ admin policy and launches the instance with a payload inside of userdata.
-func PersistEC2(sess *session.Session, payload string, ami string) {
+func PersistEC2(sess *session.Session, ami string, payload string) {
 	if len(ami) > 0 {
 		ami = "ami-013f17f36f8b1fefb"
 	}
