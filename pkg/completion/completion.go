@@ -108,6 +108,7 @@ ____) | |___| |__| | |__| | | \ \
 				),
 				readline.PcItem("roles"),
 				readline.PcItem("ssm-parameters"),
+				readline.PcItem("policies"),
 			),
 			readline.PcItem("get",
 				readline.PcItem("user",
@@ -115,6 +116,7 @@ ____) | |___| |__| | |__| | | \ \
 				),
 				readline.PcItem("group"),
 				readline.PcItem("role"),
+				readline.PcItem("policy"),
 				readline.PcItem("s3-policy",
 					readline.PcItemDynamic(listBuckets(sess)),
 				),
@@ -144,7 +146,7 @@ ____) | |___| |__| | |__| | | \ \
 		if target == "" || connected == false {
 			l.SetPrompt(red("Not Connected") + " <" + blue("") + "> ")
 		} else {
-			l.SetPrompt(green("Connected") + " <" + blue(target) + "> ")
+			l.SetPrompt(green("Connected") + " <" + blue(target+"/"+region) + "> ")
 		}
 		line, err := l.Readline()
 		if err == readline.ErrInterrupt {

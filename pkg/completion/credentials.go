@@ -41,14 +41,14 @@ func assumeRole(arn string, region string) *session.Session {
 	})
 	if err != nil {
 		fmt.Println(err)
-		connected = false
+		return nil
 	} else {
 		connected = true
 	}
 	_, err = sess.Config.Credentials.Get()
 	if err != nil {
 		fmt.Println(err)
-		connected = false
+		return nil
 	} else {
 		connected = true
 	}
@@ -66,14 +66,14 @@ func assumeRaw(region string, data string) *session.Session {
 	})
 	if err != nil {
 		fmt.Println(err)
-		//connected = false
+		return nil
 	} else {
 		connected = true
 	}
 	_, err = sess.Config.Credentials.Get()
 	if err != nil {
 		fmt.Println(err)
-		//connected = false
+		return nil
 	} else {
 		connected = true
 		target = token.AccessKeyID

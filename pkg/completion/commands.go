@@ -20,7 +20,7 @@ func Commands(line string, t string) {
 	switch {
 
 	//Load aws profile from .aws/credentials
-	case strings.HasPrefix(line, "profile "):
+	case strings.HasPrefix(line, "profile"):
 		help := HelpText("profile ec2user us-east-1", "Profile is used to load a profile from ~/.aws/credentials.", "enabled")
 		parse := ParseCMD(line, 3, help)
 		if parse != nil {
@@ -30,7 +30,7 @@ func Commands(line string, t string) {
 		}
 
 	//GetSessionToken for current user
-	case strings.HasPrefix(line, "get-session-token"):
+	case strings.HasPrefix(line, "get-session-token") && connected == true:
 		help := HelpText("get-session-token us-east-1", "GetSessionToken for user", "disabled")
 		parse := ParseCMD(line, 2, help)
 		if parse != nil {
@@ -43,51 +43,62 @@ func Commands(line string, t string) {
 
 	//AssumeRole from current user.
 	case strings.HasPrefix(line, "assume-role") && connected == true:
-		parts := strings.Split(line, " ")
-		if len(parts) != 3 || strings.Contains(line, "help") {
-			fmt.Println("Required: assume-role role-arn region")
-			break
+		help := HelpText("assume-role role-arn region", "Assume role", "enabled")
+		parse := ParseCMD(line, 3, help)
+		if parse != nil {
+			arn := parse[1]
+			region = parse[2]
+			sess = assumeRole(arn, region)
+			if sess != nil {
+				target = arn
+			}
 		}
-		arn := parts[1]
-		region = parts[2]
-		sess = assumeRole(arn, region)
-		target = arn
 
 	//Assume raw json as credentials. (json format)
 	case strings.HasPrefix(line, "assume-raw"):
-		s := line
-		r := regexp.MustCompile(`[^\s"']+|"([^"]*)"|'([^']*)`)
-		parts := r.FindAllStringSubmatch(s, -1)
-		region = parts[1][0]
-		json := parts[2][2]
-		sess = assumeRaw(region, json)
-
-	//The whoami/whoareyou
-	case strings.HasPrefix(line, "whoami") && connected == true:
-		awsdata.GetCallerIdentity(sess)
-
-	case strings.HasPrefix(line, "get user ") && connected == true:
-		parts := strings.Split(line, " ")
-		if len(parts) != 3 || strings.Contains(line, "help") {
-			fmt.Println("Required: get user username")
-			break
+		help := HelpText("assume-raw us-east-1 '<json data>'", "Use credentials from cli/metadata output.", "enabled")
+		parse := ParseCMD(line, 25, help)
+		if parse != nil {
+			r := regexp.MustCompile(`[^\s"']+|"([^"]*)"|'([^']*)`)
+			parts := r.FindAllStringSubmatch(line, -1)
+			region = parts[1][0]
+			json := parts[2][2]
+			sess = assumeRaw(region, json)
 		}
-		username := parts[2]
-		awsdata.GetUser(sess, username)
 
-	case strings.HasPrefix(line, "get instance-profile ") && connected == true:
-		parts := strings.Split(line, " ")
-		profile := parts[2]
-		//awsdata.GetInstanceProfile(sess, profile)
-		status := awsdata.AnalyzeInstanceProfile(sess, profile)
-		fmt.Printf("Privileged: %v\n", status)
+	//GetSessionToken or whoami
+	case strings.HasPrefix(line, "whoami") && connected == true:
+		help := HelpText("whoami", "GetSessionToken returns current token details.", "enabled")
+		parse := ParseCMD(line, 1, help)
+		if parse != nil {
+			awsdata.GetCallerIdentity(sess)
+		}
 
-	case strings.HasPrefix(line, "get policy ") && connected == true:
-		parts := strings.Split(line, " ")
-		arn := parts[2]
-		json := awsdata.GetPolicyVersion(sess, arn)
-		status := awsdata.AnalyzePolicy(json)
-		fmt.Printf("Privileged: %v\n", status)
+	case strings.HasPrefix(line, "get user") && connected == true:
+		help := HelpText("get user username", "Get details for single user.", "enabled")
+		parse := ParseCMD(line, 3, help)
+		if parse != nil {
+			username := parse[2]
+			awsdata.GetUser(sess, username)
+		}
+
+	case strings.HasPrefix(line, "get instance-profile") && connected == true:
+		help := HelpText("get instance-profile name", "Return details about an instance profile.", "enabled")
+		parse := ParseCMD(line, 3, help)
+		if parse != nil {
+			parts := strings.Split(line, " ")
+			profile := parts[2]
+			awsdata.GetInstanceProfile(sess, profile, false)
+		}
+
+	case strings.HasPrefix(line, "get policy") && connected == true:
+		help := HelpText("get policy arn", "View json policy.", "enabled")
+		parse := ParseCMD(line, 3, help)
+		if parse != nil {
+			arn := parse[2]
+			json := awsdata.GetPolicyVersion(sess, arn)
+			fmt.Println(json)
+		}
 
 	case strings.HasPrefix(line, "get s3-policy ") && connected == true:
 		parts := strings.Split(line, " ")
@@ -187,7 +198,9 @@ func Commands(line string, t string) {
 		username := parts[2]
 		awsdata.ListGroupsForUser(sess, username)
 	case strings.HasPrefix(line, "list roles") && connected == true:
-		awsdata.ListRoles(sess)
+		awsdata.ListRoles(sess, false)
+	case strings.HasPrefix(line, "list policies") && connected == true:
+		awsdata.ListPolicies(sess)
 
 	//Enumeration
 	case strings.HasPrefix(line, "enum IAM") && connected == true:
@@ -219,8 +232,8 @@ func Commands(line string, t string) {
 		fmt.Print(string(dat))
 
 	//exit
-	case line == "bye":
-		goto exit
+	case line == "quit":
+		connected = false
 
 	//Default if no case
 	default:
@@ -233,5 +246,4 @@ func Commands(line string, t string) {
 		}
 
 	}
-exit:
 }

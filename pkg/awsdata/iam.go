@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/url"
+	"strconv"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
@@ -65,7 +66,7 @@ func ListGroups(sess *session.Session) {
 	}
 }
 
-func ListRoles(sess *session.Session) *iam.ListRolesOutput {
+func ListRoles(sess *session.Session, hide bool) *iam.ListRolesOutput {
 
 	// Create a IAM service client.
 	svc := iam.New(sess)
@@ -79,13 +80,15 @@ func ListRoles(sess *session.Session) *iam.ListRolesOutput {
 		return nil
 	}
 
-	//for i, role := range result.Roles {
-	//	if role == nil {
-	//		continue
-	//	}
-	//fmt.Println(*role)
-	//fmt.Printf("%d role %s created %v\n", i, *role.Arn, role.CreateDate)
-	//}
+	if hide == false {
+		for i, role := range result.Roles {
+			if role == nil {
+				continue
+			}
+			//fmt.Println(*role)
+			fmt.Printf("%d role %s created %v\n", i, *role.Arn, role.CreateDate)
+		}
+	}
 	return result
 }
 
@@ -110,6 +113,37 @@ func ListGroupsForUser(sess *session.Session, username string) []*iam.Group {
 		fmt.Printf("%d role %s created %v\n", i, *group.Arn, group.CreateDate)
 	}
 	return result.Groups
+}
+
+func ListPolicies(sess *session.Session) {
+	data := [][]string{}
+	var policies []string
+
+	// Create a IAM service client.
+	svc := iam.New(sess)
+
+	result, err := svc.ListPolicies(&iam.ListPoliciesInput{
+		MaxItems:     aws.Int64(1000),
+		OnlyAttached: aws.Bool(true),
+	})
+
+	if err != nil {
+		fmt.Println("Error", err)
+		return
+	}
+
+	for _, policy := range result.Policies {
+		if policy == nil {
+			continue
+		}
+		policies = append(policies, *policy.Arn)
+		n := *policy.AttachmentCount
+		count := strconv.FormatInt(n, 10)
+		row := []string{*policy.PolicyName, *policy.Arn, count}
+		data = append(data, row)
+	}
+	header := []string{"Policy Name", "Arn", "Attachment Count"}
+	tableData(data, header)
 }
 
 func ListAttachedGroupPolicies(sess *session.Session, groupname string) []*iam.AttachedPolicy {
@@ -495,7 +529,7 @@ func AddRoleToInstanceProfile(sess *session.Session, name string) {
 	}
 }
 
-func GetInstanceProfile(sess *session.Session, profile string) *iam.GetInstanceProfileOutput {
+func GetInstanceProfile(sess *session.Session, profile string, hide bool) *iam.GetInstanceProfileOutput {
 	svc := iam.New(sess)
 	input := &iam.GetInstanceProfileInput{
 		InstanceProfileName: aws.String(profile),
@@ -518,6 +552,9 @@ func GetInstanceProfile(sess *session.Session, profile string) *iam.GetInstanceP
 			fmt.Println(err.Error())
 		}
 		return nil
+	}
+	if hide == false {
+		fmt.Println(*result.InstanceProfile)
 	}
 	return result
 }

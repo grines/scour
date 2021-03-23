@@ -97,14 +97,16 @@ func contains1(s []string, str string) bool {
 }
 
 func AnalyzeInstanceProfile(sess *session.Session, profile string) bool {
-	data := GetInstanceProfile(sess, profile)
-	for _, v := range data.InstanceProfile.Roles {
-		policies := ListAttachedRolePolicies(sess, *v.RoleName)
-		for _, p := range policies {
-			json := GetPolicyVersion(sess, *p.PolicyArn)
-			status := AnalyzePolicy(json)
-			if status == true {
-				return true
+	data := GetInstanceProfile(sess, profile, true)
+	if data != nil {
+		for _, v := range data.InstanceProfile.Roles {
+			policies := ListAttachedRolePolicies(sess, *v.RoleName)
+			for _, p := range policies {
+				json := GetPolicyVersion(sess, *p.PolicyArn)
+				status := AnalyzePolicy(json)
+				if status == true {
+					return true
+				}
 			}
 		}
 	}
@@ -209,7 +211,7 @@ func AnalyzeRoleTrustRelationships(sess *session.Session) {
 
 	data := [][]string{}
 
-	roles := ListRoles(sess)
+	roles := ListRoles(sess, true)
 	for _, v := range roles.Roles {
 		decodedValue, err := url.QueryUnescape(aws.StringValue(v.AssumeRolePolicyDocument))
 		if err != nil {
