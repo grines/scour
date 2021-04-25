@@ -9,7 +9,9 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/iam"
+	"github.com/aws/aws-sdk-go/service/organizations"
 )
 
 func ListUsers(sess *session.Session, hide bool) []string {
@@ -44,30 +46,40 @@ func ListUsers(sess *session.Session, hide bool) []string {
 	return users
 }
 
-func ListGroups(sess *session.Session) {
+func ListGroups(sess *session.Session, hide bool) *iam.ListGroupsOutput {
+	data := [][]string{}
+	var groups []string
 
 	// Create a IAM service client.
 	svc := iam.New(sess)
 
 	result, err := svc.ListGroups(&iam.ListGroupsInput{
-		MaxItems: aws.Int64(10),
+		MaxItems: aws.Int64(100),
 	})
 
 	if err != nil {
 		fmt.Println("Error", err)
-		return
+		return nil
 	}
 
-	for i, user := range result.Groups {
-		if user == nil {
+	for _, group := range result.Groups {
+		if group == nil {
 			continue
 		}
-		fmt.Printf("%d user %s created %v\n", i, *user.GroupName, user.CreateDate)
+		groups = append(groups, *group.GroupName)
+		row := []string{*group.GroupName, group.CreateDate.String()}
+		data = append(data, row)
 	}
+	header := []string{"GroupName", "CreateDate"}
+	if hide == false {
+		tableData(data, header)
+	}
+	return result
 }
 
 func ListRoles(sess *session.Session, hide bool) *iam.ListRolesOutput {
-
+	data := [][]string{}
+	var roles []string
 	// Create a IAM service client.
 	svc := iam.New(sess)
 
@@ -81,13 +93,18 @@ func ListRoles(sess *session.Session, hide bool) *iam.ListRolesOutput {
 	}
 
 	if hide == false {
-		for i, role := range result.Roles {
+		for _, role := range result.Roles {
 			if role == nil {
 				continue
 			}
-			//fmt.Println(*role)
-			fmt.Printf("%d role %s created %v\n", i, *role.Arn, role.CreateDate)
+			roles = append(roles, *role.RoleName)
+			row := []string{*role.RoleName, *role.Arn, role.CreateDate.String()}
+			data = append(data, row)
 		}
+	}
+	header := []string{"RoleName", "RoleARN", "CreateDate"}
+	if hide == false {
+		tableData(data, header)
 	}
 	return result
 }
@@ -106,11 +123,11 @@ func ListGroupsForUser(sess *session.Session, username string) []*iam.Group {
 		return nil
 	}
 
-	for i, group := range result.Groups {
+	for _, group := range result.Groups {
 		if group == nil {
 			continue
 		}
-		fmt.Printf("%d role %s created %v\n", i, *group.Arn, group.CreateDate)
+		//fmt.Printf("%d role %s created %v\n", i, *group.Arn, group.CreateDate)
 	}
 	return result.Groups
 }
@@ -336,7 +353,7 @@ func GetUserPolicy(sess *session.Session, username string, policy string) string
 	//data := []byte(decodedValue)
 }
 
-func CreateAccessKey(sess *session.Session, username string) {
+func CreateAccessKey(sess *session.Session, username string) *iam.CreateAccessKeyOutput {
 	svc := iam.New(sess)
 	input := &iam.CreateAccessKeyInput{
 		UserName: aws.String(username),
@@ -360,10 +377,10 @@ func CreateAccessKey(sess *session.Session, username string) {
 			// Message from an error.
 			fmt.Println(err.Error())
 		}
-		return
+		return nil
 	}
 
-	fmt.Println(result)
+	return result
 }
 
 func CreateInstanceProfile(sess *session.Session, name string) {
@@ -400,21 +417,35 @@ func CreateInstanceProfile(sess *session.Session, name string) {
 	fmt.Println(result)
 }
 
-func CreateRole(sess *session.Session, name string) {
+func GetRole(sess *session.Session, rolename string) *iam.GetRoleOutput {
+	svc := iam.New(sess)
+	input := &iam.GetRoleInput{
+		RoleName: aws.String(rolename),
+	}
 
-	policy := `{
-		"Version": "2012-10-17",
-		"Statement": [
-		  {
-			"Sid": "",
-			"Effect": "Allow",
-			"Principal": {
-			  "Service": "ec2.amazonaws.com"
-			},
-			"Action": "sts:AssumeRole"
-		  }
-		]
-	}`
+	result, err := svc.GetRole(input)
+	if err != nil {
+		if aerr, ok := err.(awserr.Error); ok {
+			switch aerr.Code() {
+			case iam.ErrCodeNoSuchEntityException:
+				fmt.Println(iam.ErrCodeNoSuchEntityException, aerr.Error())
+			case iam.ErrCodeServiceFailureException:
+				fmt.Println(iam.ErrCodeServiceFailureException, aerr.Error())
+			default:
+				fmt.Println(aerr.Error())
+			}
+		} else {
+			// Print the error, cast err to awserr.Error to get the Code and
+			// Message from an error.
+			fmt.Println(err.Error())
+		}
+		return nil
+	}
+
+	return result
+}
+
+func CreateRole(sess *session.Session, name string, policy string) string {
 
 	svc := iam.New(sess)
 	input := &iam.CreateRoleInput{
@@ -447,16 +478,16 @@ func CreateRole(sess *session.Session, name string) {
 			// Message from an error.
 			fmt.Println(err.Error())
 		}
-		return
+		return ""
 	}
 
-	fmt.Println(result)
+	return *result.Role.Arn
 }
 
-func AttachRolePolicy(sess *session.Session, name string) {
+func AttachRolePolicy(sess *session.Session, name string, policyArn string) {
 	svc := iam.New(sess)
 	input := &iam.AttachRolePolicyInput{
-		PolicyArn: aws.String("arn:aws:iam::aws:policy/AdministratorAccess"),
+		PolicyArn: aws.String(policyArn),
 		RoleName:  aws.String(name),
 	}
 
@@ -557,4 +588,349 @@ func GetInstanceProfile(sess *session.Session, profile string, hide bool) *iam.G
 		fmt.Println(*result.InstanceProfile)
 	}
 	return result
+}
+
+func CreateUser(sess *session.Session, username string) bool {
+	svc := iam.New(sess)
+	input := &iam.CreateUserInput{
+		UserName: aws.String(username),
+	}
+
+	_, err := svc.CreateUser(input)
+	if err != nil {
+		if aerr, ok := err.(awserr.Error); ok {
+			switch aerr.Code() {
+			case iam.ErrCodeLimitExceededException:
+				fmt.Println(iam.ErrCodeLimitExceededException, aerr.Error())
+			case iam.ErrCodeEntityAlreadyExistsException:
+				fmt.Println(iam.ErrCodeEntityAlreadyExistsException, aerr.Error())
+			case iam.ErrCodeNoSuchEntityException:
+				fmt.Println(iam.ErrCodeNoSuchEntityException, aerr.Error())
+			case iam.ErrCodeInvalidInputException:
+				fmt.Println(iam.ErrCodeInvalidInputException, aerr.Error())
+			case iam.ErrCodeConcurrentModificationException:
+				fmt.Println(iam.ErrCodeConcurrentModificationException, aerr.Error())
+			case iam.ErrCodeServiceFailureException:
+				fmt.Println(iam.ErrCodeServiceFailureException, aerr.Error())
+			default:
+				fmt.Println(aerr.Error())
+			}
+		} else {
+			// Print the error, cast err to awserr.Error to get the Code and
+			// Message from an error.
+			fmt.Println(err.Error())
+		}
+		return false
+	}
+
+	return true
+}
+
+func AttachUserPolicy(sess *session.Session, username string, arn string) bool {
+	svc := iam.New(sess)
+	input := &iam.AttachUserPolicyInput{
+		PolicyArn: aws.String(arn),
+		UserName:  aws.String(username),
+	}
+
+	_, err := svc.AttachUserPolicy(input)
+	if err != nil {
+		if aerr, ok := err.(awserr.Error); ok {
+			switch aerr.Code() {
+			case iam.ErrCodeNoSuchEntityException:
+				fmt.Println(iam.ErrCodeNoSuchEntityException, aerr.Error())
+			case iam.ErrCodeLimitExceededException:
+				fmt.Println(iam.ErrCodeLimitExceededException, aerr.Error())
+			case iam.ErrCodeInvalidInputException:
+				fmt.Println(iam.ErrCodeInvalidInputException, aerr.Error())
+			case iam.ErrCodePolicyNotAttachableException:
+				fmt.Println(iam.ErrCodePolicyNotAttachableException, aerr.Error())
+			case iam.ErrCodeServiceFailureException:
+				fmt.Println(iam.ErrCodeServiceFailureException, aerr.Error())
+			default:
+				fmt.Println(aerr.Error())
+			}
+		} else {
+			// Print the error, cast err to awserr.Error to get the Code and
+			// Message from an error.
+			fmt.Println(err.Error())
+		}
+		return false
+	}
+
+	return true
+}
+
+func TrustPolicyAWS(accountID string) string {
+	var policy string
+
+	policy = fmt.Sprintf(`{
+			"Version": "2012-10-17",
+			"Statement": [
+			  {
+				"Effect": "Allow",
+				"Principal": {
+				  "AWS": "arn:aws:iam::%s:root"
+				},
+				"Action": "sts:AssumeRole",
+				"Condition": {}
+			  }
+			]
+		  }`, accountID)
+	return policy
+}
+
+func TrustPolicyService(service string) string {
+	var policy string
+
+	policy = fmt.Sprintf(`{
+		"Version": "2012-10-17",
+		"Statement": [
+		  {
+			"Sid": "",
+			"Effect": "Allow",
+			"Principal": {
+			  "Service": "%s"
+			},
+			"Action": "sts:AssumeRole"
+		  }
+		]
+	}`, service)
+
+	return policy
+}
+
+func CreatePolicy(sess *session.Session, name string, policy string) string {
+	svc := iam.New(sess)
+	input := &iam.CreatePolicyInput{
+		PolicyName:     aws.String(name),
+		PolicyDocument: aws.String(policy),
+	}
+
+	result, err := svc.CreatePolicy(input)
+	if err != nil {
+		if aerr, ok := err.(awserr.Error); ok {
+			switch aerr.Code() {
+			case iam.ErrCodeNoSuchEntityException:
+				fmt.Println(iam.ErrCodeNoSuchEntityException, aerr.Error())
+			case iam.ErrCodeServiceFailureException:
+				fmt.Println(iam.ErrCodeServiceFailureException, aerr.Error())
+			default:
+				fmt.Println(aerr.Error())
+			}
+		} else {
+			// Print the error, cast err to awserr.Error to get the Code and
+			// Message from an error.
+			fmt.Println(err.Error())
+		}
+		return ""
+	}
+	return *result.Policy.Arn
+}
+
+func UpdateAssumeRolePolicy(sess *session.Session, role string, policy string) {
+
+	svc := iam.New(sess)
+	input := &iam.UpdateAssumeRolePolicyInput{
+		PolicyDocument: aws.String(policy),
+		RoleName:       aws.String(role),
+	}
+
+	result, err := svc.UpdateAssumeRolePolicy(input)
+	if err != nil {
+		if aerr, ok := err.(awserr.Error); ok {
+			switch aerr.Code() {
+			case iam.ErrCodeNoSuchEntityException:
+				fmt.Println(iam.ErrCodeNoSuchEntityException, aerr.Error())
+			case iam.ErrCodeServiceFailureException:
+				fmt.Println(iam.ErrCodeServiceFailureException, aerr.Error())
+			default:
+				fmt.Println(aerr.Error())
+			}
+		} else {
+			// Print the error, cast err to awserr.Error to get the Code and
+			// Message from an error.
+			fmt.Println(err.Error())
+		}
+		return
+	}
+	if result.String() != "" {
+		fmt.Println("Role updated")
+	}
+}
+
+func AddUserToGroup(sess *session.Session, group string, user string) bool {
+	svc := iam.New(session.New())
+	input := &iam.AddUserToGroupInput{
+		GroupName: aws.String(group),
+		UserName:  aws.String(user),
+	}
+
+	_, err := svc.AddUserToGroup(input)
+	if err != nil {
+		if aerr, ok := err.(awserr.Error); ok {
+			switch aerr.Code() {
+			case iam.ErrCodeNoSuchEntityException:
+				fmt.Println(iam.ErrCodeNoSuchEntityException, aerr.Error())
+			case iam.ErrCodeLimitExceededException:
+				fmt.Println(iam.ErrCodeLimitExceededException, aerr.Error())
+			case iam.ErrCodeServiceFailureException:
+				fmt.Println(iam.ErrCodeServiceFailureException, aerr.Error())
+			default:
+				fmt.Println(aerr.Error())
+			}
+		} else {
+			// Print the error, cast err to awserr.Error to get the Code and
+			// Message from an error.
+			fmt.Println(err.Error())
+		}
+		return false
+	}
+
+	return true
+}
+
+func CreateLoginProfile(sess *session.Session, user string) {
+	svc := iam.New(sess)
+	password := "h]6EszR}vJ*m"
+	input := &iam.CreateLoginProfileInput{
+		Password:              aws.String(password),
+		PasswordResetRequired: aws.Bool(false),
+		UserName:              aws.String(user),
+	}
+
+	result, err := svc.CreateLoginProfile(input)
+	if err != nil {
+		if aerr, ok := err.(awserr.Error); ok {
+			switch aerr.Code() {
+			case iam.ErrCodeEntityAlreadyExistsException:
+				fmt.Println(iam.ErrCodeEntityAlreadyExistsException, aerr.Error())
+			case iam.ErrCodeNoSuchEntityException:
+				fmt.Println(iam.ErrCodeNoSuchEntityException, aerr.Error())
+			case iam.ErrCodePasswordPolicyViolationException:
+				fmt.Println(iam.ErrCodePasswordPolicyViolationException, aerr.Error())
+			case iam.ErrCodeLimitExceededException:
+				fmt.Println(iam.ErrCodeLimitExceededException, aerr.Error())
+			case iam.ErrCodeServiceFailureException:
+				fmt.Println(iam.ErrCodeServiceFailureException, aerr.Error())
+			default:
+				fmt.Println(aerr.Error())
+			}
+		} else {
+			// Print the error, cast err to awserr.Error to get the Code and
+			// Message from an error.
+			fmt.Println(err.Error())
+		}
+		return
+	}
+
+	fmt.Println(result)
+	fmt.Println(password)
+}
+
+func ListAccountAliases(sess *session.Session) {
+	svc := iam.New(sess)
+	input := &iam.ListAccountAliasesInput{}
+
+	result, err := svc.ListAccountAliases(input)
+	if err != nil {
+		if aerr, ok := err.(awserr.Error); ok {
+			switch aerr.Code() {
+			case iam.ErrCodeServiceFailureException:
+				fmt.Println(iam.ErrCodeServiceFailureException, aerr.Error())
+			default:
+				fmt.Println(aerr.Error())
+			}
+		} else {
+			// Print the error, cast err to awserr.Error to get the Code and
+			// Message from an error.
+			fmt.Println(err.Error())
+		}
+		return
+	}
+
+	fmt.Println(result)
+
+}
+
+func DescribeOrganization(sess *session.Session) {
+	svc := organizations.New(sess)
+	input := &organizations.DescribeOrganizationInput{}
+
+	result, err := svc.DescribeOrganization(input)
+	if err != nil {
+		if aerr, ok := err.(awserr.Error); ok {
+			switch aerr.Code() {
+			case organizations.ErrCodeAccessDeniedException:
+				fmt.Println(organizations.ErrCodeAccessDeniedException, aerr.Error())
+			case organizations.ErrCodeAWSOrganizationsNotInUseException:
+				fmt.Println(organizations.ErrCodeAWSOrganizationsNotInUseException, aerr.Error())
+			case organizations.ErrCodeConcurrentModificationException:
+				fmt.Println(organizations.ErrCodeConcurrentModificationException, aerr.Error())
+			case organizations.ErrCodeServiceException:
+				fmt.Println(organizations.ErrCodeServiceException, aerr.Error())
+			case organizations.ErrCodeTooManyRequestsException:
+				fmt.Println(organizations.ErrCodeTooManyRequestsException, aerr.Error())
+			default:
+				fmt.Println(aerr.Error())
+			}
+		} else {
+			// Print the error, cast err to awserr.Error to get the Code and
+			// Message from an error.
+			fmt.Println(err.Error())
+		}
+		return
+	}
+
+	fmt.Println(result)
+
+}
+
+func AssociateIamInstanceProfile(sess *session.Session, instance string, role string) {
+	svc := ec2.New(sess)
+	input := &ec2.AssociateIamInstanceProfileInput{
+		IamInstanceProfile: &ec2.IamInstanceProfileSpecification{
+			Name: aws.String(role),
+		},
+		InstanceId: aws.String(instance),
+	}
+
+	result, err := svc.AssociateIamInstanceProfile(input)
+	if err != nil {
+		if aerr, ok := err.(awserr.Error); ok {
+			switch aerr.Code() {
+			default:
+				fmt.Println(aerr.Error())
+			}
+		} else {
+			// Print the error, cast err to awserr.Error to get the Code and
+			// Message from an error.
+			fmt.Println(err.Error())
+		}
+		return
+	}
+
+	fmt.Println(result)
+}
+
+func ListInstanceProfiles(sess *session.Session) {
+	svc := iam.New(sess)
+	input := &iam.ListInstanceProfilesInput{}
+
+	result, err := svc.ListInstanceProfiles(input)
+	if err != nil {
+		if aerr, ok := err.(awserr.Error); ok {
+			switch aerr.Code() {
+			default:
+				fmt.Println(aerr.Error())
+			}
+		} else {
+			// Print the error, cast err to awserr.Error to get the Code and
+			// Message from an error.
+			fmt.Println(err.Error())
+		}
+		return
+	}
+
+	fmt.Println(result)
 }

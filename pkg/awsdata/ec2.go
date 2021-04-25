@@ -7,6 +7,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/drk1wi/Modlishka/log"
 )
 
 func DescribeInstances(sess *session.Session) []*ec2.Reservation {
@@ -65,11 +66,11 @@ func RunInstance(sess *session.Session, data *ec2.RunInstancesInput) string {
 	runResult, err := svc.RunInstances(data)
 
 	if err != nil {
-		fmt.Println("Could not create instance", err)
+		log.Errorf("Could not create instance %v", err)
 		return ""
 	}
 
-	fmt.Println("Created instance", *runResult.Instances[0].InstanceId)
+	log.Infof("Created instance %v", *runResult.Instances[0].InstanceId)
 	return *runResult.Instances[0].InstanceId
 }
 
@@ -100,11 +101,11 @@ func ec2Status(sess *session.Session, instanceID string) []*ec2.InstanceStatus {
 	return result.InstanceStatuses
 }
 
-func ModifyInstanceAttribute(sess *session.Session, input *ec2.ModifyInstanceAttributeInput) {
+func ModifyInstanceAttribute(sess *session.Session, input *ec2.ModifyInstanceAttributeInput) bool {
 
 	svc := ec2.New(sess)
 
-	result, err := svc.ModifyInstanceAttribute(input)
+	_, err := svc.ModifyInstanceAttribute(input)
 	if err != nil {
 		if aerr, ok := err.(awserr.Error); ok {
 			switch aerr.Code() {
@@ -116,10 +117,10 @@ func ModifyInstanceAttribute(sess *session.Session, input *ec2.ModifyInstanceAtt
 			// Message from an error.
 			fmt.Println(err.Error())
 		}
-		return
+		return false
 	}
+	return true
 
-	fmt.Println(result)
 }
 
 func StopInstance(sess *session.Session, instanceID string) {
@@ -145,7 +146,7 @@ func StopInstance(sess *session.Session, instanceID string) {
 		return
 	}
 
-	fmt.Println(result)
+	log.Infof("Stopping Instance %v - State: %v", instanceID, *result.StoppingInstances[0].CurrentState.Name)
 }
 
 func StartInstance(sess *session.Session, instanceID string) {
@@ -171,7 +172,7 @@ func StartInstance(sess *session.Session, instanceID string) {
 		return
 	}
 
-	fmt.Println(result)
+	log.Infof("Starting Instance %v - State: %v", instanceID, *result.StartingInstances[0].CurrentState.Name)
 }
 
 func DescribeSecurityGroup(sess *session.Session, sg string) *ec2.DescribeSecurityGroupsOutput {
@@ -197,5 +198,47 @@ func DescribeSecurityGroup(sess *session.Session, sg string) *ec2.DescribeSecuri
 		return nil
 	}
 
+	return result
+}
+
+func DescribeVpnConnections(sess *session.Session) *ec2.DescribeVpnConnectionsOutput {
+	svc := ec2.New(sess)
+	input := &ec2.DescribeVpnConnectionsInput{}
+
+	result, err := svc.DescribeVpnConnections(input)
+	if err != nil {
+		if aerr, ok := err.(awserr.Error); ok {
+			switch aerr.Code() {
+			default:
+				fmt.Println(aerr.Error())
+			}
+		} else {
+			// Print the error, cast err to awserr.Error to get the Code and
+			// Message from an error.
+			fmt.Println(err.Error())
+		}
+		return nil
+	}
+	return result
+}
+
+func DescribeVpcPeeringConnections(sess *session.Session) *ec2.DescribeVpcPeeringConnectionsOutput {
+	svc := ec2.New(sess)
+	input := &ec2.DescribeVpcPeeringConnectionsInput{}
+
+	result, err := svc.DescribeVpcPeeringConnections(input)
+	if err != nil {
+		if aerr, ok := err.(awserr.Error); ok {
+			switch aerr.Code() {
+			default:
+				fmt.Println(aerr.Error())
+			}
+		} else {
+			// Print the error, cast err to awserr.Error to get the Code and
+			// Message from an error.
+			fmt.Println(err.Error())
+		}
+		return nil
+	}
 	return result
 }

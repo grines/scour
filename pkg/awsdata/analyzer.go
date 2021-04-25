@@ -56,6 +56,34 @@ func AnalyzePolicy(data string) bool {
 	return false
 }
 
+func GetTrustPolicy(data string) ([]string, []interface{}, map[string]interface{}) {
+	var doc PolicyDocument
+	var principalType []string
+	//var effect string
+	var identity []interface{}
+	var principal map[string]interface{}
+
+	//Privileged Actions
+	//privs := []string{"*", "ec2:*", "iam:*", "s3:*", "lambda:*", "*:*"}
+
+	err1 := json.Unmarshal([]byte(data), &doc)
+
+	if err1 != nil {
+		fmt.Println(err1)
+	}
+
+	for _, v := range doc.Statement {
+		principal = v.Principal
+		for k, p := range v.Principal {
+			principalType = append(principalType, k)
+			identity = append(identity, p)
+
+		}
+	}
+
+	return principalType, identity, principal
+}
+
 func parseObject(t interface{}) []string {
 	var actions []string
 	switch reflect.TypeOf(t).Kind() {
@@ -227,4 +255,22 @@ func AnalyzeRoleTrustRelationships(sess *session.Session) {
 	header := []string{"Role", "Can Assume", "isPrivileged"}
 	tableData(data, header)
 	fmt.Println("Try: assume-role arn:aws:iam::accountid:role/rolename")
+}
+
+func TestInterface(t interface{}) []string {
+	var idents []string
+	switch reflect.TypeOf(t).Kind() {
+	case reflect.Slice:
+		s := reflect.ValueOf(t)
+
+		for i := 0; i < s.Len(); i++ {
+			id := fmt.Sprintf(s.Index(i).Elem().String())
+			idents = append(idents, id)
+		}
+	case reflect.String:
+		s := reflect.ValueOf(t)
+		idents = append(idents, s.String())
+	}
+	return idents
+
 }

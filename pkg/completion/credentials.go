@@ -35,7 +35,7 @@ func getProfile(pname string, region string) *session.Session {
 //Assume role from roleArn
 func assumeRole(arn string, region string) *session.Session {
 	creds := stscreds.NewCredentials(sess, arn)
-	sess, err := session.NewSession(&aws.Config{
+	sessNew, err := session.NewSession(&aws.Config{
 		Region:      aws.String(region),
 		Credentials: creds,
 	})
@@ -52,7 +52,7 @@ func assumeRole(arn string, region string) *session.Session {
 	} else {
 		connected = true
 	}
-	return sess
+	return sessNew
 }
 
 //Assume raw json token set

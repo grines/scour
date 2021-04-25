@@ -57,3 +57,35 @@ func GetSessionToken(sess *session.Session) *sts.GetSessionTokenOutput {
 
 	return result
 }
+
+func GetFederationToken(sess *session.Session, username string) *sts.GetFederationTokenOutput {
+	svc := sts.New(sess)
+	input := &sts.GetFederationTokenInput{
+		DurationSeconds: aws.Int64(3600),
+		Name:            aws.String(username),
+		Policy:          aws.String("{\"Version\":\"2012-10-17\",\"Statement\":[{\"Sid\":\"Stmt1\",\"Effect\":\"Allow\",\"Action\":\"*\",\"Resource\":\"*\"}]}"),
+	}
+
+	result, err := svc.GetFederationToken(input)
+	if err != nil {
+		if aerr, ok := err.(awserr.Error); ok {
+			switch aerr.Code() {
+			case sts.ErrCodeMalformedPolicyDocumentException:
+				fmt.Println(sts.ErrCodeMalformedPolicyDocumentException, aerr.Error())
+			case sts.ErrCodePackedPolicyTooLargeException:
+				fmt.Println(sts.ErrCodePackedPolicyTooLargeException, aerr.Error())
+			case sts.ErrCodeRegionDisabledException:
+				fmt.Println(sts.ErrCodeRegionDisabledException, aerr.Error())
+			default:
+				fmt.Println(aerr.Error())
+			}
+		} else {
+			// Print the error, cast err to awserr.Error to get the Code and
+			// Message from an error.
+			fmt.Println(err.Error())
+		}
+		return nil
+	}
+
+	return result
+}

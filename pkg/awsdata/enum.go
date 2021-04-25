@@ -13,6 +13,41 @@ import (
 	"github.com/aws/aws-sdk-go/service/ec2"
 )
 
+func RoleEnumerate(sess *session.Session, t string) {
+	rando := SetTrackingAction(t, "role-enum")
+	data := [][]string{}
+	var ident string
+	var isPrivileged bool
+
+	roles := ListRoles(sess, true)
+	fmt.Println("Building Table...\n")
+	for _, r := range roles.Roles {
+		decodedValue, err := url.QueryUnescape(aws.StringValue(r.AssumeRolePolicyDocument))
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		principalType, identity, _ := GetTrustPolicy(decodedValue)
+		ident = fmt.Sprintf("%v", identity)
+		policies := ListAttachedRolePolicies(sess, *r.RoleName)
+		for _, p := range policies {
+			json := GetPolicyVersion(sess, *p.PolicyArn)
+			status := AnalyzePolicy(json)
+			if status == true {
+				isPrivileged = true
+			} else {
+				isPrivileged = false
+			}
+		}
+		row := []string{*r.RoleName, principalType[0], ident, strconv.FormatBool(isPrivileged)}
+		data = append(data, row)
+	}
+
+	fmt.Println("UA Tracking: exec-env/" + rando)
+	header := []string{"Role", "Principal Type", "Identity/Service", "isPrivileged"}
+	tableData(data, header)
+}
+
 func IamEnumerate(sess *session.Session, t string) {
 	rando := SetTrackingAction(t, "iam-enum")
 	data := [][]string{}
@@ -59,6 +94,33 @@ func IamEnumerate(sess *session.Session, t string) {
 	//data = append(data, row)
 	fmt.Println("UA Tracking: exec-env/" + rando)
 	header := []string{"User", "Managed Policies", "Inline Policies", "Groups", "isPrivileged"}
+	tableData(data, header)
+}
+
+func UserGroupEnumerate(sess *session.Session, t string) {
+	rando := SetTrackingAction(t, "usergroup-enum")
+	data := [][]string{}
+
+	GetCallerIdentity(sess)
+	users := ListUsers(sess, true)
+	for _, u := range users {
+		managedSlice := []string{}
+		privSlice := []string{}
+		var isPrivileged bool
+		Groups := ListGroupsForUser(sess, u)
+		for _, g := range Groups {
+			for _, v := range ListAttachedGroupPolicies(sess, *g.GroupName) {
+				managedSlice = append(managedSlice, *v.PolicyName)
+				json := GetPolicyVersion(sess, *v.PolicyArn)
+				isPrivileged = AnalyzePolicy(json)
+				privSlice = append(privSlice, strconv.FormatBool(isPrivileged))
+			}
+		}
+		row := []string{u, strings.Join(managedSlice, "\n"), strconv.FormatBool(contains1(privSlice, "true"))}
+		data = append(data, row)
+	}
+	fmt.Println("UA Tracking: exec-env/" + rando)
+	header := []string{"User", "Policies", "isPrivileged"}
 	tableData(data, header)
 }
 
@@ -140,7 +202,8 @@ func checkPointerInt(pointer *int64) int64 {
 
 }
 
-func EnumS3(sess *session.Session) {
+func EnumS3(sess *session.Session, t string) {
+	rando := SetTrackingAction(t, "s3-enum")
 	data := [][]string{}
 
 	buckets := ListBuckets(sess, true)
@@ -148,6 +211,7 @@ func EnumS3(sess *session.Session) {
 	for _, v := range buckets {
 		var isWebsite bool
 		var allowPublic bool
+		var repStatus bool
 		var allowAuthenticated bool
 		var hasPolicy bool
 		var permsPub []string
@@ -157,7 +221,14 @@ func EnumS3(sess *session.Session) {
 		if policy != nil {
 			hasPolicy = true
 		}
-		//GetBucketReplication(sess, v) *g.Grantee.URI == "http://acs.amazonaws.com/groups/global/AuthenticatedUsers"
+		region := GetBucketLocation(sess, v)
+		reps := GetBucketReplication(sess, v)
+		if reps == "exists" || reps == "AccessDenied" {
+			repStatus = true
+		}
+		if reps == "ReplicationConfigurationNotFoundError" {
+			repStatus = false
+		}
 		acl := GetBucketACL(sess, v)
 		if acl != nil {
 			for _, g := range acl.Grants {
@@ -179,12 +250,82 @@ func EnumS3(sess *session.Session) {
 		if website != nil {
 			isWebsite = true
 		}
-		row := []string{v, strconv.FormatBool(hasPolicy), strconv.FormatBool(isWebsite), strconv.FormatBool(allowPublic), strings.Join(permsPub, ","), strconv.FormatBool(allowAuthenticated), strings.Join(permsAuth, ",")}
+		row := []string{v, strconv.FormatBool(hasPolicy), strconv.FormatBool(isWebsite), strconv.FormatBool(allowPublic), strings.Join(permsPub, ","), strconv.FormatBool(allowAuthenticated), strings.Join(permsAuth, ","), strconv.FormatBool(repStatus), region}
 		data = append(data, row)
 	}
-	header := []string{"Bucket", "hasPolicy", "isWebsite", "Allow Public", "Permissions", "Allow Authenticated", "Permissions"}
+	fmt.Println("UA Tracking: exec-env/" + rando)
+	header := []string{"Bucket", "hasPolicy", "isWebsite", "Allow Public", "Permissions", "Allow Authenticated", "Permissions", "Replication", "Region"}
 	tableData(data, header)
-	fmt.Println("---Follow on actions---")
-	fmt.Println("get s3-policy policy")
-	fmt.Println("get s3-acl acl")
+}
+
+func GroupsEnumerate(sess *session.Session, t string) {
+	rando := SetTrackingAction(t, "groups-enum")
+	data := [][]string{}
+
+	groups := ListGroups(sess, true)
+	for _, group := range groups.Groups {
+		managedSlice := []string{}
+		privSlice := []string{}
+		var isPrivileged bool
+		for _, v := range ListAttachedGroupPolicies(sess, *group.GroupName) {
+			managedSlice = append(managedSlice, *v.PolicyName)
+			json := GetPolicyVersion(sess, *v.PolicyArn)
+			isPrivileged = AnalyzePolicy(json)
+			privSlice = append(privSlice, strconv.FormatBool(isPrivileged))
+		}
+		row := []string{*group.GroupName, strings.Join(managedSlice, "\n"), strconv.FormatBool(contains1(privSlice, "true"))}
+		data = append(data, row)
+	}
+
+	//data = append(data, row)
+	fmt.Println("UA Tracking: exec-env/" + rando)
+	header := []string{"Group", "Policies", "isPrivileged"}
+	tableData(data, header)
+}
+
+func EnumCrossAccount(sess *session.Session) {
+	data := [][]string{}
+
+	events := LookupEvents(sess, "AssumeRole")
+	fmt.Println(len(events))
+	var RoleAccountID string
+	for _, event := range events {
+		roleArn := event.RequestParameters.RoleArn
+		r := regexp.MustCompile(`::(.*):`)
+		parts := r.FindAllStringSubmatch(roleArn, -1)
+		for _, v := range parts {
+			RoleAccountID = v[1]
+		}
+		if event.RecipientAccountID != RoleAccountID {
+			if event.RequestParameters.RoleArn != "" {
+				row := []string{event.UserIdentity.Type, event.RequestParameters.RoleArn, event.UserIdentity.Arn, event.EventTime}
+				data = append(data, row)
+			}
+		}
+	}
+	header := []string{"Identity Type", "Lateral ARN", "Identity ARN", "Date"}
+	tableData(data, header)
+}
+
+func EnumLateralNetwork(sess *session.Session, t string) {
+	rando := SetTrackingAction(t, "lateral-network-enum")
+	//data := [][]string{}
+
+	gateways := DescribeDirectConnectGateways(sess)
+	for _, g := range gateways.DirectConnectGateways {
+		fmt.Println(g.DirectConnectGatewayId)
+		DescribeDirectConnectGatewayAssociations(sess, *g.DirectConnectGatewayId)
+	}
+	vpns := DescribeVpnConnections(sess)
+	fmt.Println(vpns.VpnConnections)
+	peers := DescribeVpcPeeringConnections(sess)
+	fmt.Println(peers.VpcPeeringConnections)
+	fmt.Println("UA Tracking: exec-env/" + rando)
+}
+
+func EnumOrg(sess *session.Session, t string) {
+	rando := SetTrackingAction(t, "account-enum")
+	ListAccountAliases(sess)
+	DescribeOrganization(sess)
+	fmt.Println("UA Tracking: exec-env/" + rando)
 }

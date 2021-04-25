@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"regexp"
+	"strings"
 
 	"github.com/aws/aws-sdk-go/aws/session"
 )
@@ -11,6 +12,25 @@ import (
 type Finding struct {
 	Rule    string `json:"rule"`
 	Finding string `json:"finding"`
+}
+
+func CredentialDiscoveryLambda(sess *session.Session, t string) {
+	rando := SetTrackingAction(t, "lambda-creds")
+	data := [][]string{}
+	var envVariables []string
+
+	functions := ListFunctions(sess)
+	for _, f := range functions.Functions {
+		function := GetFunction(sess, *f.FunctionName)
+		for k, v := range function.Configuration.Environment.Variables {
+			envVariables = append(envVariables, k+":"+*v)
+		}
+		row := []string{*function.Configuration.FunctionName, strings.Join(envVariables, ","), *function.Code.RepositoryType}
+		data = append(data, row)
+	}
+	fmt.Println("UA Tracking: exec-env/" + rando)
+	header := []string{"Function", "Env Variables", "Code Location"}
+	tableData(data, header)
 }
 
 func CredentialDiscoveryUserData(sess *session.Session, t string) {
