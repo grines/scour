@@ -241,6 +241,14 @@ func Commands(line string, t string) {
 		payload := parts[3]
 		instance := parts[4]
 		awsdata.PrivescUserdata(sess, payload, instance)
+	case strings.HasPrefix(line, "attack privesc CreateLoginProfile") && connected == true:
+		help := HelpText("attack privesc CreateLoginProfile bob", "Adds login profile to user", "enabled")
+		parse := ParseCMD(line, 4, help)
+		if parse != nil {
+			username := parse[3]
+			awsdata.PrivescCreateLoginProfile(sess, username, t)
+			os.Setenv("AWS_EXECUTION_ENV", t)
+		}
 
 	//List operations
 	case strings.HasPrefix(line, "aws ssm list-parameters") && connected == true:
@@ -365,12 +373,14 @@ func Commands(line string, t string) {
 		os.Setenv("AWS_EXECUTION_ENV", t)
 
 	//Lateral Movement
-	case strings.HasPrefix(line, "attack enum CrossAccount") && connected == true:
-		awsdata.EnumCrossAccount(sess)
+	case strings.HasPrefix(line, "attack lateral CrossAccount") && connected == true:
+		awsdata.EnumCrossAccount(sess, t)
+		os.Setenv("AWS_EXECUTION_ENV", t)
 	case strings.HasPrefix(line, "attack lateral Console") && connected == true:
 		parts := strings.Split(line, " ")
 		user := parts[3]
-		awsdata.LateralConsole(sess, user)
+		awsdata.LateralConsole(sess, user, t)
+		os.Setenv("AWS_EXECUTION_ENV", t)
 
 	//Credential Discovery
 	case strings.HasPrefix(line, "attack creds UserData") && connected == true:
@@ -384,6 +394,14 @@ func Commands(line string, t string) {
 		os.Setenv("AWS_EXECUTION_ENV", t)
 	case strings.HasPrefix(line, "attack creds Lambda") && connected == true:
 		awsdata.CredentialDiscoveryLambda(sess, t)
+		os.Setenv("AWS_EXECUTION_ENV", t)
+
+	//Exfil
+	case strings.HasPrefix(line, "attack exfil ec2Snapshot") && connected == true:
+		parts := strings.Split(line, " ")
+		instanceid := parts[3]
+		accountid := parts[4]
+		awsdata.ExfilEC2Snapshot(sess, instanceid, accountid, t)
 		os.Setenv("AWS_EXECUTION_ENV", t)
 
 	//Show command history

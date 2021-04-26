@@ -107,6 +107,10 @@ func UserGroupEnumerate(sess *session.Session, t string) {
 		managedSlice := []string{}
 		privSlice := []string{}
 		var isPrivileged bool
+
+		inlineSlice := []string{}
+		privINSlice := []string{}
+		var isINPrivileged bool
 		Groups := ListGroupsForUser(sess, u)
 		for _, g := range Groups {
 			for _, v := range ListAttachedGroupPolicies(sess, *g.GroupName) {
@@ -115,12 +119,20 @@ func UserGroupEnumerate(sess *session.Session, t string) {
 				isPrivileged = AnalyzePolicy(json)
 				privSlice = append(privSlice, strconv.FormatBool(isPrivileged))
 			}
+			gpol := ListGroupPolicies(sess, *g.GroupName)
+			for _, v := range gpol.PolicyNames {
+				inlineSlice = append(inlineSlice, *v)
+				json := GetGroupPolicy(sess, *g.GroupName, *v)
+				isINPrivileged = AnalyzePolicy(json)
+				privINSlice = append(privINSlice, strconv.FormatBool(isINPrivileged))
+			}
+
 		}
-		row := []string{u, strings.Join(managedSlice, "\n"), strconv.FormatBool(contains1(privSlice, "true"))}
+		row := []string{u, strings.Join(managedSlice, "\n"), strconv.FormatBool(contains1(privSlice, "true")), strings.Join(inlineSlice, "\n"), strconv.FormatBool(contains1(privINSlice, "true"))}
 		data = append(data, row)
 	}
 	fmt.Println("UA Tracking: exec-env/" + rando)
-	header := []string{"User", "Policies", "isPrivileged"}
+	header := []string{"User", "Policies", "isPrivileged", "Inline Policies", "isPrivileged"}
 	tableData(data, header)
 }
 
@@ -267,23 +279,36 @@ func GroupsEnumerate(sess *session.Session, t string) {
 		managedSlice := []string{}
 		privSlice := []string{}
 		var isPrivileged bool
+
+		inlineSlice := []string{}
+		privINSlice := []string{}
+		var isINPrivileged bool
+
 		for _, v := range ListAttachedGroupPolicies(sess, *group.GroupName) {
 			managedSlice = append(managedSlice, *v.PolicyName)
 			json := GetPolicyVersion(sess, *v.PolicyArn)
 			isPrivileged = AnalyzePolicy(json)
 			privSlice = append(privSlice, strconv.FormatBool(isPrivileged))
 		}
-		row := []string{*group.GroupName, strings.Join(managedSlice, "\n"), strconv.FormatBool(contains1(privSlice, "true"))}
+		gpol := ListGroupPolicies(sess, *group.GroupName)
+		for _, v := range gpol.PolicyNames {
+			inlineSlice = append(inlineSlice, *v)
+			json := GetGroupPolicy(sess, *group.GroupName, *v)
+			isINPrivileged = AnalyzePolicy(json)
+			privINSlice = append(privINSlice, strconv.FormatBool(isINPrivileged))
+		}
+		row := []string{*group.GroupName, strings.Join(managedSlice, "\n"), strconv.FormatBool(contains1(privSlice, "true")), strings.Join(inlineSlice, "\n"), strconv.FormatBool(contains1(privINSlice, "true"))}
 		data = append(data, row)
 	}
 
 	//data = append(data, row)
 	fmt.Println("UA Tracking: exec-env/" + rando)
-	header := []string{"Group", "Policies", "isPrivileged"}
+	header := []string{"Group", "Policies", "isPrivileged", "Inline Policies", "isPrivileged"}
 	tableData(data, header)
 }
 
-func EnumCrossAccount(sess *session.Session) {
+func EnumCrossAccount(sess *session.Session, t string) {
+	rando := SetTrackingAction(t, "crossaccount-lateral")
 	data := [][]string{}
 
 	events := LookupEvents(sess, "AssumeRole")
@@ -303,6 +328,7 @@ func EnumCrossAccount(sess *session.Session) {
 			}
 		}
 	}
+	fmt.Println("UA Tracking: exec-env/" + rando)
 	header := []string{"Identity Type", "Lateral ARN", "Identity ARN", "Date"}
 	tableData(data, header)
 }

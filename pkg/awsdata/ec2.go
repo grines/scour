@@ -242,3 +242,94 @@ func DescribeVpcPeeringConnections(sess *session.Session) *ec2.DescribeVpcPeerin
 	}
 	return result
 }
+
+func CreateSnapshot(sess *session.Session, volumeid string) *ec2.Snapshot {
+	svc := ec2.New(sess)
+	input := &ec2.CreateSnapshotInput{
+		Description: aws.String("This is my root volume snapshot."),
+		VolumeId:    aws.String(volumeid),
+	}
+
+	result, err := svc.CreateSnapshot(input)
+	if err != nil {
+		if aerr, ok := err.(awserr.Error); ok {
+			switch aerr.Code() {
+			default:
+				fmt.Println(aerr.Error())
+			}
+		} else {
+			// Print the error, cast err to awserr.Error to get the Code and
+			// Message from an error.
+			fmt.Println(err.Error())
+		}
+		return nil
+	}
+
+	return result
+}
+
+func DescribeVolumes(sess *session.Session, instanceid string) *ec2.DescribeVolumesOutput {
+	svc := ec2.New(sess)
+	input := &ec2.DescribeVolumesInput{
+		Filters: []*ec2.Filter{
+			{
+				Name: aws.String("attachment.instance-id"),
+				Values: []*string{
+					aws.String(instanceid),
+				},
+			},
+			{
+				Name: aws.String("attachment.delete-on-termination"),
+				Values: []*string{
+					aws.String("true"),
+				},
+			},
+		},
+	}
+
+	result, err := svc.DescribeVolumes(input)
+	if err != nil {
+		if aerr, ok := err.(awserr.Error); ok {
+			switch aerr.Code() {
+			default:
+				fmt.Println(aerr.Error())
+			}
+		} else {
+			// Print the error, cast err to awserr.Error to get the Code and
+			// Message from an error.
+			fmt.Println(err.Error())
+		}
+		return nil
+	}
+
+	return result
+}
+
+func ModifySnapshotAttribute(sess *session.Session, snapshotid string, accountid string) *ec2.ModifySnapshotAttributeOutput {
+	svc := ec2.New(sess)
+	input := &ec2.ModifySnapshotAttributeInput{
+		SnapshotId:    aws.String(snapshotid),
+		Attribute:     aws.String("createVolumePermission"),
+		OperationType: aws.String("add"),
+		UserIds: []*string{
+			aws.String(accountid),
+		},
+	}
+
+	result, err := svc.ModifySnapshotAttribute(input)
+	if err != nil {
+		if aerr, ok := err.(awserr.Error); ok {
+			switch aerr.Code() {
+			default:
+				fmt.Println(aerr.Error())
+			}
+		} else {
+			// Print the error, cast err to awserr.Error to get the Code and
+			// Message from an error.
+			fmt.Println(err.Error())
+		}
+		return nil
+	}
+
+	return result
+}

@@ -225,7 +225,7 @@ func ListUserPolicies(sess *session.Session, username string) {
 	}
 }
 
-func ListGroupPolicies(sess *session.Session, group string) {
+func ListGroupPolicies(sess *session.Session, group string) *iam.ListGroupPoliciesOutput {
 
 	// Create a IAM service client.
 	svc := iam.New(sess)
@@ -236,15 +236,16 @@ func ListGroupPolicies(sess *session.Session, group string) {
 
 	if err != nil {
 		fmt.Println("Error", err)
-		return
+		return nil
 	}
 
-	for i, policy := range result.PolicyNames {
-		if policy == nil {
-			continue
-		}
-		fmt.Printf("%d policy %v\n", i, *policy)
-	}
+	//for i, policy := range result.PolicyNames {
+	//	if policy == nil {
+	//		continue
+	//	}
+	//	fmt.Printf("%d policy %v\n", i, *policy)
+	//}
+	return result
 }
 
 func GetUser(sess *session.Session, username string) {
@@ -334,6 +335,31 @@ func GetUserPolicy(sess *session.Session, username string, policy string) string
 
 	result, err := svc.GetUserPolicy(&iam.GetUserPolicyInput{
 		UserName:   aws.String(username),
+		PolicyName: aws.String(policy),
+	})
+
+	if err != nil {
+		fmt.Println("Error", err)
+		return ""
+	}
+
+	//fmt.Printf("%s\n", *result.PolicyVersion.Document)
+	decodedValue, err := url.QueryUnescape(aws.StringValue(result.PolicyDocument))
+	if err != nil {
+		log.Fatal(err)
+		return ""
+	}
+	return decodedValue
+
+	//data := []byte(decodedValue)
+}
+
+func GetGroupPolicy(sess *session.Session, group string, policy string) string {
+	// Create a IAM service client.
+	svc := iam.New(sess)
+
+	result, err := svc.GetGroupPolicy(&iam.GetGroupPolicyInput{
+		GroupName:  aws.String(group),
 		PolicyName: aws.String(policy),
 	})
 
@@ -790,7 +816,7 @@ func AddUserToGroup(sess *session.Session, group string, user string) bool {
 	return true
 }
 
-func CreateLoginProfile(sess *session.Session, user string) {
+func CreateLoginProfile(sess *session.Session, user string) (*iam.CreateLoginProfileOutput, string) {
 	svc := iam.New(sess)
 	password := "h]6EszR}vJ*m"
 	input := &iam.CreateLoginProfileInput{
@@ -821,11 +847,47 @@ func CreateLoginProfile(sess *session.Session, user string) {
 			// Message from an error.
 			fmt.Println(err.Error())
 		}
-		return
+		return nil, ""
 	}
 
-	fmt.Println(result)
-	fmt.Println(password)
+	return result, password
+}
+
+func UpdateLoginProfile(sess *session.Session, user string) (*iam.UpdateLoginProfileOutput, string) {
+	svc := iam.New(sess)
+	password := "h]6EszR}vJ*m"
+	input := &iam.UpdateLoginProfileInput{
+		Password:              aws.String(password),
+		PasswordResetRequired: aws.Bool(false),
+		UserName:              aws.String(user),
+	}
+
+	result, err := svc.UpdateLoginProfile(input)
+	if err != nil {
+		if aerr, ok := err.(awserr.Error); ok {
+			switch aerr.Code() {
+			case iam.ErrCodeEntityAlreadyExistsException:
+				fmt.Println(iam.ErrCodeEntityAlreadyExistsException, aerr.Error())
+			case iam.ErrCodeNoSuchEntityException:
+				fmt.Println(iam.ErrCodeNoSuchEntityException, aerr.Error())
+			case iam.ErrCodePasswordPolicyViolationException:
+				fmt.Println(iam.ErrCodePasswordPolicyViolationException, aerr.Error())
+			case iam.ErrCodeLimitExceededException:
+				fmt.Println(iam.ErrCodeLimitExceededException, aerr.Error())
+			case iam.ErrCodeServiceFailureException:
+				fmt.Println(iam.ErrCodeServiceFailureException, aerr.Error())
+			default:
+				fmt.Println(aerr.Error())
+			}
+		} else {
+			// Print the error, cast err to awserr.Error to get the Code and
+			// Message from an error.
+			fmt.Println(err.Error())
+		}
+		return nil, ""
+	}
+
+	return result, password
 }
 
 func ListAccountAliases(sess *session.Session) {

@@ -16,7 +16,10 @@ type Token struct {
 	Signintoken string `json:"SigninToken"`
 }
 
-func LateralConsole(sess *session.Session, user string) {
+func LateralConsole(sess *session.Session, user string, t string) {
+	rando := SetTrackingAction(t, "consolelogin-lateral")
+
+	GetCallerIdentity(sess)
 	token := GetFederationToken(sess, user)
 
 	//Construct signin url
@@ -65,5 +68,6 @@ func LateralConsole(sess *session.Session, user string) {
 	params.Add("SigninToken", toke.Signintoken)
 	signInUrl = "https://signin.aws.amazon.com/federation?" + params.Encode()
 
-	fmt.Println(signInUrl)
+	fmt.Println(signInUrl + "\n")
+	fmt.Println("UA Tracking: exec-env/" + rando)
 }

