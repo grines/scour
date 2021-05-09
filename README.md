@@ -5,7 +5,7 @@
 Attack AWS
 
 ## Status
-- This is still an active work in progress. **Lost of Bugs
+- This is still an active work in progress. **Lots of Bugs
 - Not ready for production
 
 - **Where to file issues**:
@@ -16,11 +16,11 @@ Attack AWS
 
 # What is Scour?
 
-Scour is a modern module based AWS exploitation framework written in golang, designed for red team testing and blue team analysis. Scour contains modern techniques that can be used to attack environemnts or build detections from attackers.
+Scour is a modern module based AWS exploitation framework written in golang, designed for red team testing and blue team analysis. Scour contains modern techniques that can be used to attack environments or build detections for defense.
 
 # Features
 - [X] Command Completion
-- [X] Dynamic listing resources
+- [X] Dynamic resource listing
 - [X] Command history
 - [X] Blue team mode (tags attacks with unique User Agent)
 
@@ -35,7 +35,7 @@ go get github.com/grines/scour
 go build main.go
 
 
-For a more detailed and user-friendly set of user instructions, please check out the Wiki's [installation guide](https://github.com/grines/scour/wiki/Installation).
+For a more detailed and user-friendly set of user instructions, please check out the Wiki's [installation guide](https://github.com/grines/scour/wiki/Installation). **coming soon
 
 ## Scour's Modules
 
@@ -62,7 +62,8 @@ The first time Scour is launched,
 ## Basic Commands in Scour
 
 * `token profile <profile_name> <region>` will list the available aws profiels stored in ~/aws/credentials.
-* `help module` will return the applicable help information for the specified module.
+* `token AssumeRole <role_name> <region>` will assume role from same or cross account. ** requires active session
+* `help module` will return the applicable help information for the specified module. **help TBD
 * `attack evasion <tactic>` will run the specified module with its default parameters.
 
 ## Running Scour From the command line
