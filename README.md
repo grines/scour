@@ -82,13 +82,13 @@ The first time Scour is launched,
 ## Enumeration
 
 * `Connected <apiuser/us-east-1> attack enum IAM` IAM discovery
-`UA Tracking: exec-env/FhFIm7mvmp/nnK7NmJXNF/iam-enum
+\*UA Tracking: exec-env/FhFIm7mvmp/nnK7NmJXNF/iam-enum
 +-------------+---------------------+------------------+---------------+--------------+
 |    USER     |  MANAGED POLICIES   | INLINE POLICIES  |    GROUPS     | ISPRIVILEGED |
 +-------------+---------------------+------------------+---------------+--------------+
 | admin  | AdministratorAccess | AllEKSInlineuser | SecurityAudit | true         |
 | EC2    | AmazonEC2FullAccess |                  |               | true         |
-+-------------+---------------------+------------------+---------------+--------------+`
++-------------+---------------------+------------------+---------------+--------------+\*
 * `Connected <apiuser/us-east-1> attack enum Roles` Roles discovery
 * `Connected <apiuser/us-east-1> attack enum EC2` EC2 discovery
 * `Connected <apiuser/us-east-1> attack enum S3` S3 discovery
