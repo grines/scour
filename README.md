@@ -80,7 +80,7 @@ The first time Scour is launched,
 * `Connected <apiuser/us-east-1> attack exfile <attack>` tab completion with list available enumeration tactics
 
 ## Enumeration
-
+![](https://github.com/grines/scour/blob/main/scour-enum.gif)
 * `Connected <apiuser/us-east-1> attack enum IAM` IAM discovery
 ```UA Tracking: exec-env/FhFIm7mvmp/nnK7NmJXNF/iam-enum
 +-------------+---------------------+------------------+---------------+--------------+
