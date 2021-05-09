@@ -79,6 +79,22 @@ The first time Scour is launched,
 * `Connected <apiuser/us-east-1> attack persist <attack>` tab completion with list available enumeration tactics
 * `Connected <apiuser/us-east-1> attack exfile <attack>` tab completion with list available enumeration tactics
 
+## Enumeration
+
+* `Connected <apiuser/us-east-1> attack enum IAM` IAM discovery
+UA Tracking: exec-env/FhFIm7mvmp/nnK7NmJXNF/iam-enum
++-------------+---------------------+------------------+---------------+--------------+
+|    USER     |  MANAGED POLICIES   | INLINE POLICIES  |    GROUPS     | ISPRIVILEGED |
++-------------+---------------------+------------------+---------------+--------------+
+| admin  | AdministratorAccess | AllEKSInlineuser | SecurityAudit | true         |
+| EC2    | AmazonEC2FullAccess |                  |               | true         |
++-------------+---------------------+------------------+---------------+--------------+
+* `Connected <apiuser/us-east-1> attack enum Roles` Roles discovery
+* `Connected <apiuser/us-east-1> attack enum EC2` EC2 discovery
+* `Connected <apiuser/us-east-1> attack enum S3` S3 discovery
+* `Connected <apiuser/us-east-1> attack enum Groups` Groups discovery
+* `Connected <apiuser/us-east-1> attack enum Network` Network discovery
+
 ## Disclaimers, and the AWS Acceptable Use Policy
 
 * To the best of our knowledge Scour's capabilities are compliant with the AWS Acceptable Use Policy, but as a flexible and modular tool, we cannot guarantee this will be true in every situation. It is entirely your responsibility to ensure that how you use Scour is compliant with the AWS Acceptable Use Policy.
