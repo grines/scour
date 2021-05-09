@@ -29,9 +29,11 @@ Scour is a modern module based AWS exploitation framework written in golang, des
 Scour is written in golang so its easy to ship around as a binary.
 
 ##Gettable
+
 go get github.com/grines/scour
 
 ##Build
+
 go build main.go
 
 
