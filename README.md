@@ -116,8 +116,25 @@ UA Tracking: exec-env/EVSWAyidC4/dudqW7y1xb/ec2-enum
 | i-01b265a5fdc45df57 | None                                                | vpc-7e830c1a | None     | 172.31.38.118 | sg-0392f752f9b849d3f | 3389*  | stopped | false        | true     |
 | i-0867709d6c0be74d9 | arn:aws:iam::861293084598:instance-profile/OrgAdmin | vpc-7e830c1a | None     | 172.31.39.199 | sg-006543a34d2f70028 | 22*    | stopped | true         | true     |
 | i-0d95790b5e7ddff23 | None                                                | vpc-7e830c1a | None     | 172.31.12.57  | sg-e1a50dac          | 33391* | stopped | false        | true     |
++---------------------+-----------------------------------------------------+--------------+----------+---------------+----------------------+--------+---------+--------------+----------+
 ```
 * `Connected <apiuser/us-east-1> attack enum S3` S3 discovery
+```
+UA Tracking: exec-env/EVSWAyidC4/GDGZaYQOuo/s3-enum
++-------------------------------------------+-----------+-----------+--------------+-------------+---------------------+-------------+-------------+-----------+
+|                  BUCKET                   | HASPOLICY | ISWEBSITE | ALLOW PUBLIC | PERMISSIONS | ALLOW AUTHENTICATED | PERMISSIONS | REPLICATION |  REGION   |
++-------------------------------------------+-----------+-----------+--------------+-------------+---------------------+-------------+-------------+-----------+
+| amazon-conn********3d79b01a               | false     | false     | false        |             | false               |             | false       | us-west-2 |
+| aws-cloudtrail-logs-**********98-cb39df0d | true      | false     | false        |             | false               |             | false       |           |
+| bullsecu*********                         | true      | true      | false        |             | false               |             | false       |           |
+| connect-6ec*****ad67                      | false     | false     | false        |             | false               |             | false       |           |
+| connect-******5337c3                      | false     | false     | false        |             | false               |             | false       |           |
+| ransom********                            | true      | false     | false        |             | false               |             | false       |           |
+| red********                               | false     | false     | false        |             | false               |             | false       |           |
+| rep-*****                                 | false     | false     | false        |             | false               |             | false       | us-west-2 |
+| terraform*******                          | false     | false     | false        |             | false               |             | false       |           |
++-------------------------------------------+-----------+-----------+--------------+-------------+---------------------+-------------+-------------+-----------+
+```
 * `Connected <apiuser/us-east-1> attack enum Groups` Groups discovery
 * `Connected <apiuser/us-east-1> attack enum Network` Network discovery
 
