@@ -1,4 +1,4 @@
-![](https://github.com/grines/scour/blob/main/scour.gif)
+![](https://github.com/grines/scour/blob/main/scour-demo.gif)
 
 # Scour - AWS Exploitation Framework
 
