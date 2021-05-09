@@ -91,6 +91,17 @@ The first time Scour is launched,
 +-------------+---------------------+------------------+---------------+--------------+
 ```
 * `Connected <apiuser/us-east-1> attack enum Roles` Roles discovery
+```
+UA Tracking: exec-env/EVSWAyidC4/o18HtFPe1P/role-enum
++------------------------------------------------------------+----------------+-----------------------------------------------------+--------------+
+|                            ROLE                            | PRINCIPAL TYPE |                  IDENTITY/SERVICE                   | ISPRIVILEGED |
++------------------------------------------------------------+----------------+-----------------------------------------------------+--------------+
+| Amazon_CodeBuild_dW6zqYHT3m                                | AWS            | [arn:aws:iam::861293084598:root                     | true         |
+|                                                            |                | codebuild.amazonaws.com]                            |              |
+| Amazon_CodeBuild_f2DOFPjMHK                                | Service        | [codebuild.amazonaws.com]                           | true         |
+| Amazon_CodeBuild_HS59ko7lxn                                | Service        | [codebuild.amazonaws.com]                           | true         |
++------------------------------------------------------------+----------------+-----------------------------------------------------+--------------+
+```
 * `Connected <apiuser/us-east-1> attack enum EC2` EC2 discovery
 * `Connected <apiuser/us-east-1> attack enum S3` S3 discovery
 * `Connected <apiuser/us-east-1> attack enum Groups` Groups discovery
