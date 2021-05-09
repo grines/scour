@@ -136,7 +136,21 @@ UA Tracking: exec-env/EVSWAyidC4/GDGZaYQOuo/s3-enum
 +-------------------------------------------+-----------+-----------+--------------+-------------+---------------------+-------------+-------------+-----------+
 ```
 * `Connected <apiuser/us-east-1> attack enum Groups` Groups discovery
+```
+UA Tracking: exec-env/EVSWAyidC4/jAIKVdESpU/groups-enum
++-----------------------------------------------+---------------------+--------------+-----------------+--------------+
+|                     GROUP                     |      POLICIES       | ISPRIVILEGED | INLINE POLICIES | ISPRIVILEGED |
++-----------------------------------------------+---------------------+--------------+-----------------+--------------+
+| EC2                                           | SecurityAudit       | false        |                 | false        |
+| OpsWorks-dac9e9ba-8b3d-4e04-9ad9-d988ca4c0731 |                     | false        |                 | false        |
+| TestGroup                                     | AmazonEC2FullAccess | true         |                 | false        |
+|                                               | SecurityAudit       |              |                 |              |
++-----------------------------------------------+---------------------+--------------+-----------------+--------------+
+```
 * `Connected <apiuser/us-east-1> attack enum Network` Network discovery
+```
+TBD
+```
 
 ## Disclaimers, and the AWS Acceptable Use Policy
 
