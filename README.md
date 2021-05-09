@@ -9,7 +9,7 @@ Attack AWS
 - Not ready for production
 
 - **Where to file issues**:
-[https://github.com/grines/Scour/issues](https://github.com/grines/Scour/issues)
+[https://github.com/grines/scour/issues](https://github.com/grines/Scour/issues)
 
 - **Maintained by**:
 [grines](https://github.com/)
