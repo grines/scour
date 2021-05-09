@@ -153,6 +153,36 @@ UA Tracking: exec-env/EVSWAyidC4/jAIKVdESpU/groups-enum
 TBD
 ```
 
+## Credential Discovery
+![](https://github.com/grines/scour/blob/main/scour-creds.gif)
+* `Connected <apiuser/us-east-1> attack creds UserData` loot credentials from EC2 userdata
+```
+UA Tracking: exec-env/yzaqX9HFvP/oL1oho99ZP/userdata-creds
++---------------------+------------------+-------------------------------------------------------------------------------+
+|     INSTANCEID      |       RULE       |                                    FINDING                                    |
++---------------------+------------------+-------------------------------------------------------------------------------+
+| i-0f5604708c0b51429 | Slack Webhook    | https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX |
+| i-0f5604708c0b51429 | Generic Password | password=thisisapassword                                                      |
++---------------------+------------------+-------------------------------------------------------------------------------+
+```
+* `Connected <apiuser/us-east-1> attack creds SSM` loot credentials from Systems Manager
+```
+UA Tracking: exec-env/yzaqX9HFvP/FASongUCcG/ssm-params-creds
++------------+----------+----------------------+
+| PARAM NAME | DATATYPE |        VALUE         |
++------------+----------+----------------------+
+| Test       | text     | thismightbeapassword |
++------------+----------+----------------------+
+```
+* `Connected <apiuser/us-east-1> attack creds ECS` loot credentials from ECS
+```
+UA Tracking: exec-env/9tsJFrIPmw/rEGaMfF5AI/ecs-creds
++-------------+-------+------------+
+| ENVARS NAME | VALUE | DEFINITION |
++-------------+-------+------------+
+| Secret      | heere | sample-app |
++-------------+-------+------------+
+```
 ## Disclaimers, and the AWS Acceptable Use Policy
 
 * To the best of our knowledge Scour's capabilities are compliant with the AWS Acceptable Use Policy, but as a flexible and modular tool, we cannot guarantee this will be true in every situation. It is entirely your responsibility to ensure that how you use Scour is compliant with the AWS Acceptable Use Policy.
