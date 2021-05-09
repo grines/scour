@@ -71,13 +71,13 @@ The first time Scour is launched,
 * `Not Connected <> token profile apiuser us-east-1` sets the session to use for commands that require one
 * `Connected <apiuser/us-east-1>` actively connected to an aws profile from (~,/aws/credentials) in (region)
 * `Connected <apiuser/us-east-1> attack enum <attack>` tab completion with list available enumeration tactics
-* `Connected <apiuser/us-east-1> attack privesc <attack>` tab completion with list available enumeration tactics
-* `Connected <apiuser/us-east-1> attack lateral <attack>` tab completion with list available enumeration tactics
-* `Connected <apiuser/us-east-1> attack evasion <attack>` tab completion with list available enumeration tactics
-* `Connected <apiuser/us-east-1> attack creds <attack>` tab completion with list available enumeration tactics
-* `Connected <apiuser/us-east-1> attack execute <attack>` tab completion with list available enumeration tactics
-* `Connected <apiuser/us-east-1> attack persist <attack>` tab completion with list available enumeration tactics
-* `Connected <apiuser/us-east-1> attack exfile <attack>` tab completion with list available enumeration tactics
+* `Connected <apiuser/us-east-1> attack privesc <attack>` tab completion with list available privilege escalation tactics
+* `Connected <apiuser/us-east-1> attack lateral <attack>` tab completion with list available lateral tactics
+* `Connected <apiuser/us-east-1> attack evasion <attack>` tab completion with list available evasion tactics
+* `Connected <apiuser/us-east-1> attack creds <attack>` tab completion with list available credential discovery tactics
+* `Connected <apiuser/us-east-1> attack execute <attack>` tab completion with list available execution tactics
+* `Connected <apiuser/us-east-1> attack persist <attack>` tab completion with list available persistance tactics
+* `Connected <apiuser/us-east-1> attack exfil <attack>` tab completion with list available exfiltration tactics
 
 ## Enumeration
 ![](https://github.com/grines/scour/blob/main/scour-enum.gif)
