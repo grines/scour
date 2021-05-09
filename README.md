@@ -40,7 +40,7 @@ For a more detailed and user-friendly set of user instructions, please check out
 ## Scour's Modules
 
 Scour uses a range modules:
-- [X] Operations (2)  
+- [X] Operations (2)  [create an anchor](#anchors-in-markdown)
 - [X] Enumeration (7)
 - [X] Privilege Escalation (3)
 - [X] Lateral Movement (2)
