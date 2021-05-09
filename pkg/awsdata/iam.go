@@ -203,7 +203,7 @@ func ListAttachedRolePolicies(sess *session.Session, rolename string) []*iam.Att
 	return result.AttachedPolicies
 }
 
-func ListUserPolicies(sess *session.Session, username string) {
+func ListUserPolicies(sess *session.Session, username string) *iam.ListUserPoliciesOutput {
 
 	// Create a IAM service client.
 	svc := iam.New(sess)
@@ -214,15 +214,10 @@ func ListUserPolicies(sess *session.Session, username string) {
 
 	if err != nil {
 		fmt.Println("Error", err)
-		return
+		return nil
 	}
 
-	for i, user := range result.PolicyNames {
-		if user == nil {
-			continue
-		}
-		fmt.Printf("%d policy %v\n", i, *user)
-	}
+	return result
 }
 
 func ListGroupPolicies(sess *session.Session, group string) *iam.ListGroupPoliciesOutput {

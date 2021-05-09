@@ -73,3 +73,13 @@ func PrivescCreateLoginProfile(sess *session.Session, user string, t string) {
 	}
 
 }
+
+func PrivescAdminPermissions(sess *session.Session, user string, t string) {
+	rando := SetTrackingAction(t, "adminperms-privesc")
+
+	policies := ListUserPolicies(sess, user)
+	for _, p := range policies.PolicyNames {
+		fmt.Println(p)
+	}
+	fmt.Println("UA Tracking: exec-env/" + rando)
+}

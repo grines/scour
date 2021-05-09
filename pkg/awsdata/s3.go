@@ -250,3 +250,71 @@ func ListObjects(sess *session.Session, bucket string) *s3.ListObjectsV2Output {
 
 	return result
 }
+
+//Required ARN with s3 sts:assume
+func PutBucketReplicaton(sess *session.Session, arn string, bucket string, destBucket string) {
+	svc := s3.New(sess)
+	input := &s3.PutBucketReplicationInput{
+		Bucket: aws.String(bucket),
+		ReplicationConfiguration: &s3.ReplicationConfiguration{
+			Role: aws.String(arn),
+			Rules: []*s3.ReplicationRule{
+				{
+					Destination: &s3.Destination{
+						Bucket:       aws.String("arn:aws:s3:::" + destBucket),
+						StorageClass: aws.String("STANDARD"),
+					},
+					Prefix: aws.String(""),
+					Status: aws.String("Enabled"),
+				},
+			},
+		},
+	}
+
+	result, err := svc.PutBucketReplication(input)
+	if err != nil {
+		if aerr, ok := err.(awserr.Error); ok {
+			switch aerr.Code() {
+			default:
+				fmt.Println(aerr.Error())
+			}
+		} else {
+			// Print the error, cast err to awserr.Error to get the Code and
+			// Message from an error.
+			fmt.Println(err.Error())
+		}
+		return
+	}
+
+	fmt.Println(result)
+}
+
+func PutPublicAccessBlock(sess *session.Session, bucket string) {
+	svc := s3.New(sess)
+	input := &s3.PutPublicAccessBlockInput{
+		Bucket: aws.String(bucket),
+		PublicAccessBlockConfiguration: &s3.PublicAccessBlockConfiguration{
+			BlockPublicAcls:       aws.Bool(false),
+			BlockPublicPolicy:     aws.Bool(false),
+			IgnorePublicAcls:      aws.Bool(false),
+			RestrictPublicBuckets: aws.Bool(false),
+		},
+	}
+
+	result, err := svc.PutPublicAccessBlock(input)
+	if err != nil {
+		if aerr, ok := err.(awserr.Error); ok {
+			switch aerr.Code() {
+			default:
+				fmt.Println(aerr.Error())
+			}
+		} else {
+			// Print the error, cast err to awserr.Error to get the Code and
+			// Message from an error.
+			fmt.Println(err.Error())
+		}
+		return
+	}
+
+	fmt.Println(result)
+}
