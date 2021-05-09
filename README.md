@@ -2,7 +2,7 @@
 
 # Scour - AWS Exploitation Framework
 
-Attack AWS
+AWS Attacks
 
 ## Status
 - This is still an active work in progress. **Lots of Bugs
