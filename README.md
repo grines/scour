@@ -42,10 +42,10 @@ For a more detailed and user-friendly set of user instructions, please check out
 Scour uses a range modules:
 - [X] [Operations](#Operations) (2)
 - [X] [Enumeration](#Enumeration) (7)
-- [X] [Privilege Escalation](#Privilege Escalation) (3)
-- [X] [Lateral Movement](#Lateral Movement) (2)
+- [X] [Privilege Escalation](#PrivilegeEscalation) (3)
+- [X] [Lateral Movement](#LateralMovement) (2)
 - [X] [Evasion](#Evasion) (5)
-- [X] [Credential Discovery](#Credential Discovery) (4)
+- [X] [Credential Discovery](#CredentialDiscovery) (4)
 - [X] [Execution](#Execution) (2)
 - [X] [Persistance](#Persistance) (7)
 - [X] [Exfiltration](#Exfiltration) (1)
