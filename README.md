@@ -99,7 +99,7 @@ UA Tracking: exec-env/EVSWAyidC4/o18HtFPe1P/role-enum
 +------------------------------------------------------------+----------------+-----------------------------------------------------+--------------+
 |                            ROLE                            | PRINCIPAL TYPE |                  IDENTITY/SERVICE                   | ISPRIVILEGED |
 +------------------------------------------------------------+----------------+-----------------------------------------------------+--------------+
-| Amazon_CodeBuild_dW6zqYHT3m                                | AWS            | [arn:aws:iam::861293084598:root                     | true         |
+| Amazon_CodeBuild_dW6zqYHT3m                                | AWS            | [arn:aws:iam::861******:root                     | true         |
 |                                                            |                | codebuild.amazonaws.com]                            |              |
 | Amazon_CodeBuild_f2DOFPjMHK                                | Service        | [codebuild.amazonaws.com]                           | true         |
 | Amazon_CodeBuild_HS59ko7lxn                                | Service        | [codebuild.amazonaws.com]                           | true         |
@@ -114,10 +114,10 @@ UA Tracking: exec-env/EVSWAyidC4/dudqW7y1xb/ec2-enum
 | i-0f5604708c0b51429 | None                                                | vpc-7e830c1a | None     | 172.31.53.199 | sg-09fcd28717cf4f512 | 80*    | stopped | false        | true     |
 |                     |                                                     |              |          |               |                      | 22*    |         |              |          |
 |                     |                                                     |              |          |               |                      | 5000*  |         |              |          |
-| i-03657fe3b9decdf51 | arn:aws:iam::861293084598:instance-profile/OrgAdmin | vpc-7e830c1a | None     | 172.31.45.96  | sg-61b1fd07          | All*   | stopped | true         | true     |
+| i-03657fe3b9decdf51 | arn:aws:iam::*****:instance-profile/OrgAdmin | vpc-7e830c1a | None     | 172.31.45.96  | sg-61b1fd07          | All*   | stopped | true         | true     |
 |                     |                                                     |              |          |               |                      | 8888*  |         |              |          |
 | i-01b265a5fdc45df57 | None                                                | vpc-7e830c1a | None     | 172.31.38.118 | sg-0392f752f9b849d3f | 3389*  | stopped | false        | true     |
-| i-0867709d6c0be74d9 | arn:aws:iam::861293084598:instance-profile/OrgAdmin | vpc-7e830c1a | None     | 172.31.39.199 | sg-006543a34d2f70028 | 22*    | stopped | true         | true     |
+| i-0867709d6c0be74d9 | arn:aws:iam::*****:instance-profile/OrgAdmin | vpc-7e830c1a | None     | 172.31.39.199 | sg-006543a34d2f70028 | 22*    | stopped | true         | true     |
 | i-0d95790b5e7ddff23 | None                                                | vpc-7e830c1a | None     | 172.31.12.57  | sg-e1a50dac          | 33391* | stopped | false        | true     |
 +---------------------+-----------------------------------------------------+--------------+----------+---------------+----------------------+--------+---------+--------------+----------+
 ```
