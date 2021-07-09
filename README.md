@@ -1,6 +1,6 @@
 # Scour - AWS Detection Framework
 
-AWS Attack Samples
+This tool is used to emulate attack patterns inside of the AWS Controlplane. Each attack is tagged with a specific UA for the blue team to signal off of.
 
 ## Status
 - This is still an active work in progress. **Lots of Bugs
