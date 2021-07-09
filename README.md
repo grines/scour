@@ -1,8 +1,6 @@
-![](https://github.com/grines/scour/blob/main/scour-demo.gif)
+# Scour - AWS Detection Framework
 
-# Scour - AWS Exploitation Framework
-
-AWS Attacks
+AWS Attack Samples
 
 ## Status
 - This is still an active work in progress. **Lots of Bugs
