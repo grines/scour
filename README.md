@@ -7,7 +7,7 @@ This tool is used to emulate attack patterns inside of the AWS Controlplane. Eac
 - Not ready for production
 
 - **Where to file issues**:
-[https://github.com/bulllabs/scour/issues](https://github.com/armaget/Scour/issues)
+[https://github.com/armaget/scour/issues](https://github.com/armaget/Scour/issues)
 
 - **Maintained by**:
 [bulllabs](https://github.com/)
