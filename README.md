@@ -10,7 +10,7 @@ This tool is used to emulate attack patterns inside of the AWS Controlplane. Eac
 [https://github.com/grines/scour/issues](https://github.com/grines/scour/issues)
 
 - **Maintained by**:
-[bulllabs](https://github.com/)
+[grines](https://github.com/)
 
 # What is Scour?
 
@@ -28,7 +28,7 @@ Scour is written in golang so its easy to ship around as a binary.
 
 ##Gettable
 
-go get github.com/bulllabs/scour
+go get github.com/grines/scour
 
 ##Build
 
