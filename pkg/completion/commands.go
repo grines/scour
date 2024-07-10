@@ -28,7 +28,6 @@ func Commands(line string, t string) {
 			target = "default"
 
 			sess = UseDefaultCredentials(region)
-			fmt.Println(sess.Config.Credentials)
 		}
 		
 	//Load aws profile from .aws/credentials
