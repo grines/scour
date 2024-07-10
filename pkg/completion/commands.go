@@ -19,6 +19,18 @@ import (
 func Commands(line string, t string) {
 	switch {
 
+	//Default Provier (ec2/env/profiles).
+	case strings.HasPrefix(line, "token DefaultProvider"):
+		help := HelpText("token DefaultProvider region", "Assume role", "enabled")
+		parse := ParseCMD(line, 3, help)
+		if parse != nil {
+			region = parse[2]
+			target = "default"
+
+			sess = UseDefaultCredentials(region)
+			fmt.Println(sess.Config.Credentials)
+		}
+		
 	//Load aws profile from .aws/credentials
 	case strings.HasPrefix(line, "token profile"):
 		help := HelpText("profile ec2user us-east-1", "Profile is used to load a profile from ~/.aws/credentials.", "enabled")
