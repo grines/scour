@@ -33,7 +33,6 @@ func UseDefaultCredentials(region string) *session.Session {
 	}
 
 	fmt.Println("Successfully created session with default credentials")
-	fmt.Println(sess.Config.Credentials)
 	return sess
 }
 
