@@ -10,6 +10,33 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 )
 
+// UseDefaultCredentials attempts to create a session that relies on the default credentials chain.
+// This chain includes EC2 instance roles when running on an EC2 instance.
+func UseDefaultCredentials(region string) *session.Session {
+	sess, err := session.NewSession(&aws.Config{
+		Region: aws.String(region),
+	})
+	if err != nil {
+		fmt.Println("Error creating session with default credentials:", err)
+		connected = false
+	} else {
+		connected = true
+	}
+
+	// Attempting to retrieve credentials to verify a successful session. This is optional.
+	_, err = sess.Config.Credentials.Get()
+	if err != nil {
+		fmt.Println("Error retrieving credentials from default credentials chain:", err)
+		connected = false
+	} else {
+		connected = true
+	}
+
+	fmt.Println("Successfully created session with default credentials")
+	fmt.Println(sess.Config.Credentials)
+	return sess
+}
+
 //Load profile from .aws/credentials by name
 func getProfile(pname string, region string) *session.Session {
 	sess, err := session.NewSession(&aws.Config{
