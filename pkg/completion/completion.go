@@ -62,7 +62,12 @@ ____) | |___| |__| | |__| | | \ \
 					readline.PcItem("us-west-1"),
 					readline.PcItem("us-west-2"),
 				),
-			),
+				readline.PcItem("DefaultProvider",
+					readline.PcItem("us-east-1"),
+					readline.PcItem("us-east-2"),
+					readline.PcItem("us-west-1"),
+					readline.PcItem("us-west-2"),
+				),			),
 
 			//ATTACK Command completion
 			readline.PcItem("attack",
